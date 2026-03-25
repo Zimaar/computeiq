@@ -1,0 +1,96 @@
+/* ── IQ Site Navigation Bar ── */
+#iq-site-nav {
+  position: sticky;
+  top: 0;
+  z-index: 10000;
+  height: 40px;
+  background: rgba(4, 6, 13, 0.98);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(22, 29, 48, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  font-family: 'JetBrains Mono', 'DM Mono', monospace;
+}
+
+#iq-site-nav a {
+  text-decoration: none;
+}
+
+.iq-nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.iq-nav-mark {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  min-height: 24px;
+  background: linear-gradient(135deg, #00e5a0, #6366f1) !important;
+  border-radius: 6px;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+  color: #04060d !important;
+  letter-spacing: -0.5px;
+  box-shadow: 0 0 12px rgba(0, 229, 160, 0.3);
+  line-height: 1;
+}
+
+.iq-nav-brand {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #94a3b8;
+  letter-spacing: 0.05em;
+}
+
+.iq-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.iq-nav-link {
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #586888;
+  padding: 10px 16px;
+  transition: color 0.2s;
+  border-bottom: 2px solid transparent;
+  line-height: 18px;
+}
+
+.iq-nav-link:hover {
+  color: #c8d4e6;
+}
+
+.iq-nav-link.active {
+  color: #00e5a0;
+  border-bottom-color: #00e5a0;
+}
+
+@media print {
+  #iq-site-nav {
+    display: none !important;
+  }
+}
+
+@media (max-width: 500px) {
+  #iq-site-nav {
+    padding: 0 0.75rem;
+  }
+  .iq-nav-brand {
+    display: none;
+  }
+  .iq-nav-link {
+    padding: 10px 10px;
+    font-size: 0.55rem;
+  }
+}

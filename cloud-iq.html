@@ -1,0 +1,2387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cloud IQ — Accelerator Intelligence | Prowys</title>
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="stylesheet" href="assets/nav.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Clash+Display:wght@400;500;600;700&family=Cabinet+Grotesk:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #04060d;
+  --bg2: #080c18;
+  --bg3: #0c1120;
+  --panel: #0a0e1c;
+  --panel2: #0f1525;
+  --border: #161d30;
+  --border2: #1f2a45;
+  --accent: #00f5c4;
+  --accent2: #6366f1;
+  --accent3: #f97316;
+  --accent4: #ec4899;
+  --accent5: #facc15;
+  --accent6: #38bdf8;
+  --text: #e2e8f0;
+  --text2: #8899bb;
+  --text3: #3a4a6a;
+  --mono: 'DM Mono', monospace;
+  --display: 'Cabinet Grotesk', sans-serif;
+  --glow: 0 0 30px rgba(0,245,196,0.12);
+  --glow2: 0 0 30px rgba(99,102,241,0.12);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--display);
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* Animated grid bg */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,245,196,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,245,196,0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Subtle radial glow at top */
+body::after {
+  content: '';
+  position: fixed;
+  top: -200px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 900px;
+  height: 600px;
+  background: radial-gradient(ellipse, rgba(0,245,196,0.04) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── HEADER ── */
+.header {
+  position: sticky; top: 0; z-index: 200;
+  background: rgba(4,6,13,0.96);
+  backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2.5rem;
+}
+
+.header-inner {
+  max-width: 1700px; margin: 0 auto;
+  display: flex; align-items: center;
+  justify-content: space-between;
+  height: 58px;
+}
+
+.logo { display: flex; align-items: center; gap: 14px; }
+
+.logo-mark {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 11px; font-weight: 500;
+  color: #04060d; letter-spacing: -0.5px;
+  box-shadow: 0 0 20px rgba(0,245,196,0.3);
+}
+
+.logo-name {
+  font-size: 1rem; font-weight: 800;
+  letter-spacing: -0.02em; color: var(--text);
+}
+
+.logo-tagline {
+  font-family: var(--mono); font-size: 0.6rem;
+  color: var(--accent); letter-spacing: 0.06em;
+  text-transform: uppercase; margin-top: 2px;
+}
+
+.header-badges { display: flex; gap: 10px; align-items: center; }
+
+.hbadge {
+  font-family: var(--mono); font-size: 0.62rem;
+  padding: 3px 10px; border-radius: 4px;
+  letter-spacing: 0.07em; text-transform: uppercase;
+}
+.hb-live { background: rgba(0,245,196,0.1); color: var(--accent); border: 1px solid rgba(0,245,196,0.25); }
+.hb-date { background: rgba(99,102,241,0.1); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.25); }
+.hb-version { background: rgba(249,115,22,0.1); color: var(--accent3); border: 1px solid rgba(249,115,22,0.25); }
+
+/* ── NAV ── */
+.nav {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 58px; z-index: 199;
+}
+
+.nav-inner {
+  max-width: 1700px; margin: 0 auto;
+  padding: 0 2.5rem;
+  display: flex; overflow-x: auto;
+  scrollbar-width: none;
+}
+.nav-inner::-webkit-scrollbar { display: none; }
+
+.ntab {
+  padding: 13px 18px;
+  font-family: var(--mono);
+  font-size: 0.65rem; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--text2);
+  background: none; border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer; white-space: nowrap;
+  transition: all 0.2s;
+}
+.ntab:hover { color: var(--text); }
+.ntab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* ── MAIN ── */
+.main {
+  max-width: 1700px; margin: 0 auto;
+  padding: 2.5rem 2.5rem;
+  position: relative; z-index: 1;
+}
+
+.section { display: none; }
+.section.active { display: block; }
+.section.active .anim-in { animation: fadeSlide 0.4s ease forwards; }
+
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── SECTION HEADER ── */
+.section-header { margin-bottom: 2rem; }
+.section-title {
+  font-size: 2rem; font-weight: 800;
+  letter-spacing: -0.03em; line-height: 1;
+  background: linear-gradient(120deg, #fff 40%, var(--accent));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; margin-bottom: 0.4rem;
+}
+.section-sub {
+  font-family: var(--mono); font-size: 0.68rem;
+  color: var(--text2); letter-spacing: 0.05em;
+}
+
+/* ── STAT CARDS ── */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+  gap: 1rem; margin-bottom: 2rem;
+}
+
+.kpi {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px; padding: 1.2rem;
+  position: relative; overflow: hidden;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.kpi:hover { border-color: var(--border2); box-shadow: var(--glow); }
+.kpi::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+}
+
+.kpi-num {
+  font-family: var(--mono); font-size: 1.9rem;
+  font-weight: 500; color: var(--accent); line-height: 1;
+  margin-bottom: 5px; letter-spacing: -1px;
+}
+.kpi-label {
+  font-size: 0.7rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--text2);
+}
+.kpi-sub {
+  font-family: var(--mono); font-size: 0.58rem;
+  color: var(--text3); margin-top: 5px; line-height: 1.5;
+}
+
+/* ── PANEL ── */
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+.panel-header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  justify-content: space-between;
+  background: rgba(255,255,255,0.015);
+}
+.panel-title {
+  font-family: var(--mono); font-size: 0.68rem;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--accent);
+}
+.panel-sub {
+  font-family: var(--mono); font-size: 0.6rem;
+  color: var(--text3);
+}
+
+/* ── TABLE ── */
+.tbl-wrap { overflow-x: auto; }
+
+table.dt {
+  width: 100%; border-collapse: collapse;
+  font-family: var(--mono); font-size: 0.7rem;
+}
+table.dt thead th {
+  background: rgba(0,245,196,0.04);
+  padding: 9px 14px; text-align: left;
+  font-size: 0.58rem; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text2);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+table.dt tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.12s;
+}
+table.dt tbody tr:hover { background: rgba(255,255,255,0.025); }
+table.dt tbody tr:last-child { border-bottom: none; }
+table.dt td {
+  padding: 8px 14px; color: var(--text);
+  white-space: nowrap;
+}
+table.dt td.d { color: var(--text2); }
+table.dt td.dim { color: var(--text3); }
+table.dt td.g { color: var(--accent); }
+table.dt td.gr { color: #4ade80; }
+table.dt td.y { color: var(--accent5); }
+table.dt td.r { color: #f87171; }
+table.dt td.b { color: var(--accent6); }
+table.dt td.p { color: #c4b5fd; }
+table.dt td.o { color: var(--accent3); }
+table.dt tr.hl { background: rgba(0,245,196,0.03) !important; }
+
+/* ── TAGS ── */
+.tag {
+  display: inline-block; padding: 2px 7px;
+  border-radius: 4px; font-size: 0.57rem;
+  font-weight: 600; letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.tag-neo { background: rgba(0,245,196,0.1); color: var(--accent); border: 1px solid rgba(0,245,196,0.2); }
+.tag-hyper { background: rgba(99,102,241,0.12); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.25); }
+.tag-mkt { background: rgba(249,115,22,0.1); color: var(--accent3); border: 1px solid rgba(249,115,22,0.2); }
+.tag-api { background: rgba(236,72,153,0.1); color: var(--accent4); border: 1px solid rgba(236,72,153,0.2); }
+.tag-nvidia { background: rgba(118,185,0,0.1); color: #86efac; border: 1px solid rgba(118,185,0,0.25); }
+.tag-amd { background: rgba(237,29,52,0.1); color: #fca5a5; border: 1px solid rgba(237,29,52,0.2); }
+.tag-intel { background: rgba(0,113,197,0.15); color: #93c5fd; border: 1px solid rgba(0,113,197,0.25); }
+.tag-google { background: rgba(66,133,244,0.1); color: #7dd3fc; border: 1px solid rgba(66,133,244,0.2); }
+.tag-amazon { background: rgba(255,153,0,0.1); color: #fcd34d; border: 1px solid rgba(255,153,0,0.25); }
+.tag-asic { background: rgba(168,85,247,0.12); color: #d8b4fe; border: 1px solid rgba(168,85,247,0.25); }
+.tag-closed { background: rgba(244,63,94,0.1); color: #fda4af; border: 1px solid rgba(244,63,94,0.2); }
+.tag-open { background: rgba(74,222,128,0.08); color: #86efac; border: 1px solid rgba(74,222,128,0.2); }
+.tag-t1 { background: rgba(244,63,94,0.12); color: #fb7185; border: 1px solid rgba(244,63,94,0.25); }
+.tag-t2 { background: rgba(249,115,22,0.1); color: var(--accent3); border: 1px solid rgba(249,115,22,0.2); }
+.tag-t3 { background: rgba(74,222,128,0.08); color: #4ade80; border: 1px solid rgba(74,222,128,0.2); }
+.tag-t4 { background: rgba(100,116,139,0.12); color: #94a3b8; border: 1px solid rgba(100,116,139,0.25); }
+
+/* ── GRID LAYOUTS ── */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.2rem; margin-bottom: 1.5rem; }
+.chart-row { display: grid; grid-template-columns: 1.3fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+.chart-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.2rem; margin-bottom: 1.5rem; }
+
+/* ── CHART CONTAINERS ── */
+.chart-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+.chart-body { padding: 1.5rem; }
+.chart-body canvas { max-height: 300px; }
+
+/* ── NOTE BOX ── */
+.note {
+  background: rgba(0,245,196,0.04);
+  border: 1px solid rgba(0,245,196,0.15);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px; padding: 0.9rem 1.2rem;
+  margin-bottom: 1.5rem;
+  font-family: var(--mono); font-size: 0.68rem;
+  color: var(--text2); line-height: 1.6;
+}
+.note span { color: var(--accent); font-weight: 500; }
+
+/* ── SUBHEADER ── */
+.sub-hd {
+  font-family: var(--mono); font-size: 0.65rem;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--accent2); margin: 2rem 0 0.8rem;
+  display: flex; align-items: center; gap: 10px;
+}
+.sub-hd::before {
+  content: ''; width: 3px; height: 16px;
+  background: linear-gradient(var(--accent), var(--accent2));
+  border-radius: 2px; display: block;
+}
+
+/* ── LEGEND ── */
+.legend {
+  padding: 0.8rem 1.5rem;
+  border-top: 1px solid var(--border);
+  display: flex; flex-wrap: wrap; gap: 1.2rem;
+  font-family: var(--mono); font-size: 0.6rem;
+  color: var(--text2); background: rgba(0,0,0,0.2);
+}
+.leg-item { display: flex; align-items: center; gap: 6px; }
+.leg-dot { width: 7px; height: 7px; border-radius: 50%; }
+
+/* ── MAP SVG ── */
+.world-map-container {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+.map-header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  justify-content: space-between;
+  background: rgba(255,255,255,0.015);
+}
+
+/* ── GEO GRID ── */
+.geo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem; margin-bottom: 1.5rem;
+}
+
+.geo-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px; padding: 1.2rem;
+  transition: all 0.2s;
+}
+.geo-card:hover {
+  border-color: var(--border2);
+  box-shadow: var(--glow);
+}
+.geo-region {
+  font-family: var(--mono); font-size: 0.65rem;
+  font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--accent);
+  margin-bottom: 0.9rem;
+  display: flex; align-items: center; gap: 8px;
+}
+.geo-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  animation: pulse 2.2s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.35;} }
+.geo-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 0.7rem; }
+.geo-tag {
+  font-family: var(--mono); font-size: 0.58rem;
+  padding: 2px 7px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border); border-radius: 4px;
+  color: var(--text2);
+}
+.geo-locs {
+  font-family: var(--mono); font-size: 0.6rem;
+  color: var(--text3); line-height: 1.65;
+}
+
+/* ── FILTER BAR ── */
+.filter-bar {
+  display: flex; gap: 10px; margin-bottom: 1.5rem;
+  flex-wrap: wrap; align-items: center;
+}
+.finput {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 7px; padding: 8px 14px;
+  font-family: var(--mono); font-size: 0.68rem;
+  color: var(--text); outline: none; width: 240px;
+  transition: border-color 0.2s;
+}
+.finput:focus { border-color: var(--accent); }
+.finput::placeholder { color: var(--text3); }
+.fbtn {
+  background: rgba(0,245,196,0.07);
+  border: 1px solid rgba(0,245,196,0.2);
+  border-radius: 7px; padding: 8px 14px;
+  font-family: var(--mono); font-size: 0.65rem;
+  color: var(--text2); cursor: pointer;
+  transition: all 0.2s; letter-spacing: 0.05em;
+}
+.fbtn:hover { background: rgba(0,245,196,0.12); color: var(--text); }
+.fbtn.active { background: rgba(0,245,196,0.15); color: var(--accent); border-color: rgba(0,245,196,0.4); }
+.fcount {
+  font-family: var(--mono); font-size: 0.62rem;
+  color: var(--text3); margin-left: auto;
+}
+
+/* ── PROGRESS BARS ── */
+.share-bar {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 6px;
+}
+.share-label { font-family: var(--mono); font-size: 0.65rem; color: var(--text2); min-width: 130px; }
+.share-track {
+  flex: 1; height: 5px; background: var(--border2);
+  border-radius: 3px; overflow: hidden;
+}
+.share-fill { height: 100%; border-radius: 3px; transition: width 1s ease; }
+.share-pct { font-family: var(--mono); font-size: 0.62rem; color: var(--text2); min-width: 45px; text-align: right; }
+
+/* ── ACCELERATOR CHIPS ── */
+.chip-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px,1fr));
+  gap: 10px; padding: 1.2rem;
+}
+.chip {
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--border);
+  border-radius: 8px; padding: 0.85rem;
+  transition: all 0.2s; cursor: default;
+}
+.chip:hover {
+  border-color: var(--accent);
+  background: rgba(0,245,196,0.04);
+  box-shadow: var(--glow);
+}
+.chip-name {
+  font-family: var(--mono); font-size: 0.7rem;
+  font-weight: 500; color: var(--text); margin-bottom: 3px;
+}
+.chip-maker {
+  font-size: 0.55rem; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--text3); margin-bottom: 5px;
+}
+.chip-price { font-family: var(--mono); font-size: 0.62rem; color: #4ade80; }
+.chip-vram { font-family: var(--mono); font-size: 0.58rem; color: var(--text3); margin-top: 2px; }
+
+@media (max-width: 1100px) {
+  .two-col, .chart-row { grid-template-columns: 1fr; }
+  .three-col, .geo-grid, .chart-row-3 { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 700px) {
+  .three-col, .geo-grid, .chart-row-3 { grid-template-columns: 1fr; }
+  .main { padding: 1.2rem; }
+  .kpi-row { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+<!-- IQ Site Nav -->
+<div id="iq-site-nav">
+  <a href="/" class="iq-nav-logo">
+    <span class="iq-nav-mark">IQ</span>
+    <span class="iq-nav-brand">GPU Intelligence</span>
+  </a>
+  <div class="iq-nav-links">
+    <a href="/" class="iq-nav-link">Home</a>
+    <a href="cloud-iq.html" class="iq-nav-link active">Cloud IQ</a>
+    <a href="compute-iq.html" class="iq-nav-link">Compute IQ</a>
+  </div>
+</div>
+<style>.header{top:40px!important}.nav{top:98px!important}</style>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-mark">IQ</div>
+      <div>
+        <div class="logo-name">Accelerator Cloud IQ</div>
+        <div class="logo-tagline">GPU · ASIC · Purpose-Built Accelerator Intelligence</div>
+      </div>
+    </div>
+    <div class="header-badges">
+      <span class="hbadge hb-live">● Live Data</span>
+      <span class="hbadge hb-date">March 2026</span>
+      <span class="hbadge hb-version">v3.1 Deep Edition</span>
+    </div>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <button class="ntab active" onclick="showSection('overview',this)">01 / Overview</button>
+    <button class="ntab" onclick="showSection('accelerators',this)">02 / Accelerator Index</button>
+    <button class="ntab" onclick="showSection('pricing',this)">03 / GPU Pricing Matrix</button>
+    <button class="ntab" onclick="showSection('asic',this)">04 / Purpose-Built Accelerators</button>
+    <button class="ntab" onclick="showSection('providers',this)">05 / Cloud Providers</button>
+    <button class="ntab" onclick="showSection('models',this)">06 / AI Models & API</button>
+    <button class="ntab" onclick="showSection('geo',this)">07 / Geographic Coverage</button>
+    <button class="ntab" onclick="showSection('strategy',this)">08 / Buyer Strategy</button>
+  </div>
+</nav>
+
+<main class="main">
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- 01. OVERVIEW                                   -->
+<!-- ═══════════════════════════════════════════════ -->
+<section class="section active" id="overview">
+  <div class="section-header anim-in">
+    <div class="section-title">Market Overview</div>
+    <div class="section-sub">AI Accelerator Cloud Ecosystem — Infrastructure & Model Layer — March 2026</div>
+  </div>
+
+  <div class="kpi-row anim-in">
+    <div class="kpi"><div class="kpi-num">48</div><div class="kpi-label">Cloud Providers Tracked</div><div class="kpi-sub">4 categories · Global coverage</div></div>
+    <div class="kpi"><div class="kpi-num">70+</div><div class="kpi-label">Accelerator SKUs</div><div class="kpi-sub">NVIDIA · AMD · Intel · Google TPU · AWS Trainium · Groq LPU</div></div>
+    <div class="kpi"><div class="kpi-num">55+</div><div class="kpi-label">AI Models Tracked</div><div class="kpi-sub">Closed + Open-weight + Inference APIs</div></div>
+    <div class="kpi"><div class="kpi-num">$0.05</div><div class="kpi-label">Lowest API /1M tokens</div><div class="kpi-sub">Groq · Llama 3.1 8B input</div></div>
+    <div class="kpi"><div class="kpi-num">$25</div><div class="kpi-label">Highest API /1M tokens</div><div class="kpi-sub">Anthropic · Claude Opus 4.6 output</div></div>
+    <div class="kpi"><div class="kpi-num">$0.63</div><div class="kpi-label">Lowest GPU/hr (public)</div><div class="kpi-sub">Lambda · Tesla V100</div></div>
+    <div class="kpi"><div class="kpi-num">$7.49</div><div class="kpi-label">Highest GPU/hr (Blackwell)</div><div class="kpi-sub">Together AI · HGX B200 on-demand</div></div>
+    <div class="kpi"><div class="kpi-num">500×</div><div class="kpi-label">API Price Spread</div><div class="kpi-sub">Groq 8B vs Claude Opus 4.6 output</div></div>
+  </div>
+
+  <div class="note anim-in">
+    <span>Market Structure (March 2026):</span> The AI cloud ecosystem is bifurcated into three distinct layers — (1) <span>AI Factories &amp; Reserved Frontier Clusters</span> (CoreWeave, Nebius, Lambda, Crusoe, Oracle) offering H100/B200 at scale; (2) <span>Self-Serve Specialist GPU Clouds</span> (RunPod, Hyperstack, Vast.ai, TensorDock, io.net) providing price-floor access; and (3) <span>Model / Inference API Platforms</span> (OpenAI, Anthropic, Google, Cohere, Mistral, Groq, Fireworks). Beyond NVIDIA dominance, purpose-built accelerators — Google TPU v5, AWS Trainium2, Intel Gaudi 3, Groq LPU, Cerebras WSE — are capturing specialized workloads. Blackwell-era hardware (B200/GB200/GB300) is now available but mostly reserved/enterprise. H100 &amp; H200 remain the production workhorses.
+  </div>
+
+  <!-- Market share charts row -->
+  <div class="chart-row anim-in">
+    <div class="chart-panel">
+      <div class="panel-header">
+        <span class="panel-title">Provider Category Market Share — 2026</span>
+        <span class="panel-sub">By tracked provider count</span>
+      </div>
+      <div class="chart-body">
+        <canvas id="chartProviderPie"></canvas>
+      </div>
+    </div>
+    <div class="chart-panel">
+      <div class="panel-header">
+        <span class="panel-title">GPU Ecosystem Share — Data Center Fleet</span>
+        <span class="panel-sub">By accelerator vendor (estimated fleet deployment, H2 2025)</span>
+      </div>
+      <div class="chart-body">
+        <canvas id="chartGpuShare"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- GPU Generation bar chart -->
+  <div class="chart-panel anim-in">
+    <div class="panel-header">
+      <span class="panel-title">NVIDIA GPU Generation Distribution — Cloud Deployments</span>
+      <span class="panel-sub">Estimated % of deployed NVIDIA data center GPU capacity by generation tier, March 2026</span>
+    </div>
+    <div class="chart-body" style="padding: 1.5rem 2rem;">
+      <div class="share-bar"><div class="share-label">Blackwell (B200/GB200)</div><div class="share-track"><div class="share-fill" style="width:12%;background:linear-gradient(90deg,#00f5c4,#6366f1)"></div></div><div class="share-pct">~12%</div></div>
+      <div class="share-bar"><div class="share-label">Hopper H100 SXM</div><div class="share-track"><div class="share-fill" style="width:38%;background:#00f5c4"></div></div><div class="share-pct">~38%</div></div>
+      <div class="share-bar"><div class="share-label">Hopper H100 PCIe/NVL</div><div class="share-track"><div class="share-fill" style="width:18%;background:#22d3ee"></div></div><div class="share-pct">~18%</div></div>
+      <div class="share-bar"><div class="share-label">H200 SXM</div><div class="share-track"><div class="share-fill" style="width:8%;background:#38bdf8"></div></div><div class="share-pct">~8%</div></div>
+      <div class="share-bar"><div class="share-label">Ampere A100 SXM/PCIe</div><div class="share-track"><div class="share-fill" style="width:14%;background:#a5b4fc"></div></div><div class="share-pct">~14%</div></div>
+      <div class="share-bar"><div class="share-label">Ada Lovelace (L40S/L4)</div><div class="share-track"><div class="share-fill" style="width:5%;background:#f97316"></div></div><div class="share-pct">~5%</div></div>
+      <div class="share-bar"><div class="share-label">RTX Consumer (4090/3090)</div><div class="share-track"><div class="share-fill" style="width:3%;background:#facc15"></div></div><div class="share-pct">~3%</div></div>
+      <div class="share-bar"><div class="share-label">Legacy (V100/T4/P40)</div><div class="share-track"><div class="share-fill" style="width:2%;background:#64748b"></div></div><div class="share-pct">~2%</div></div>
+    </div>
+  </div>
+
+  <!-- Accelerator vendor share -->
+  <div class="chart-panel anim-in">
+    <div class="panel-header">
+      <span class="panel-title">Purpose-Built &amp; Alternative Accelerator Vendor Share — Cloud AI Workloads</span>
+      <span class="panel-sub">Non-NVIDIA AI accelerator ecosystem deployment estimate, March 2026 (even 0.01% share reported)</span>
+    </div>
+    <div class="chart-body" style="padding: 1.5rem 2rem;">
+      <div class="share-bar"><div class="share-label">Google TPU v4/v5</div><div class="share-track"><div class="share-fill" style="width:55%;background:#4285f4"></div></div><div class="share-pct">~4.20%</div></div>
+      <div class="share-bar"><div class="share-label">AWS Trainium 1/2</div><div class="share-track"><div class="share-fill" style="width:40%;background:#ff9900"></div></div><div class="share-pct">~3.10%</div></div>
+      <div class="share-bar"><div class="share-label">AMD MI300X/MI325X</div><div class="share-track"><div class="share-fill" style="width:28%;background:#ed1d34"></div></div><div class="share-pct">~2.15%</div></div>
+      <div class="share-bar"><div class="share-label">Intel Gaudi 2/3</div><div class="share-track"><div class="share-fill" style="width:14%;background:#0071c5"></div></div><div class="share-pct">~1.05%</div></div>
+      <div class="share-bar"><div class="share-label">Groq LPU (inference)</div><div class="share-track"><div class="share-fill" style="width:7%;background:#a855f7"></div></div><div class="share-pct">~0.54%</div></div>
+      <div class="share-bar"><div class="share-label">Cerebras WSE-3</div><div class="share-track"><div class="share-fill" style="width:3%;background:#06b6d4"></div></div><div class="share-pct">~0.23%</div></div>
+      <div class="share-bar"><div class="share-label">SambaNova SN40L</div><div class="share-track"><div class="share-fill" style="width:2%;background:#ec4899"></div></div><div class="share-pct">~0.15%</div></div>
+      <div class="share-bar"><div class="share-label">Graphcore IPU (BoW)</div><div class="share-track"><div class="share-fill" style="width:1.4%;background:#f59e0b"></div></div><div class="share-pct">~0.11%</div></div>
+      <div class="share-bar"><div class="share-label">Tenstorrent Wormhole</div><div class="share-track"><div class="share-fill" style="width:1%;background:#10b981"></div></div><div class="share-pct">~0.08%</div></div>
+      <div class="share-bar"><div class="share-label">Furiosa FuriosaAI RNGD</div><div class="share-track"><div class="share-fill" style="width:0.5%;background:#84cc16"></div></div><div class="share-pct">~0.04%</div></div>
+      <div class="share-bar"><div class="share-label">Moffett-AI Antoum (S30)</div><div class="share-track"><div class="share-fill" style="width:0.3%;background:#f472b6"></div></div><div class="share-pct">~0.02%</div></div>
+      <div class="share-bar"><div class="share-label">Biren BR100</div><div class="share-track"><div class="share-fill" style="width:0.15%;background:#c084fc"></div></div><div class="share-pct">~0.01%</div></div>
+    </div>
+    <div class="legend">
+      <div class="leg-item"><div class="leg-dot" style="background:#4285f4"></div> Google TPU dominates non-NVIDIA cloud due to captive GCP usage</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#ff9900"></div> AWS Trainium growing via EC2 Trn instances &amp; UltraClusters</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#ed1d34"></div> AMD MI300X gaining traction via Oracle &amp; TensorWave</div>
+    </div>
+  </div>
+
+  <!-- Price trend line chart -->
+  <div class="chart-panel anim-in">
+    <div class="panel-header">
+      <span class="panel-title">H100 SXM On-Demand Price Trend — 2024 → 2026</span>
+      <span class="panel-sub">Median market rate $/GPU/hr across neo-cloud providers</span>
+    </div>
+    <div class="chart-body">
+      <canvas id="chartPriceTrend" style="max-height:260px"></canvas>
+    </div>
+  </div>
+
+</section>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- 02. ACCELERATOR INDEX                          -->
+<!-- ═══════════════════════════════════════════════ -->
+<section class="section" id="accelerators">
+  <div class="section-header anim-in">
+    <div class="section-title">Full Accelerator Index</div>
+    <div class="section-sub">All tracked GPU &amp; AI accelerator SKUs — NVIDIA, AMD, Intel, Google, AWS, Groq, Cerebras, SambaNova &amp; more — March 2026</div>
+  </div>
+
+  <div class="note anim-in">
+    <span>Coverage Policy:</span> Every accelerator with measurable cloud deployment share is reported, including fringe and emerging SKUs with &lt;0.01% share. Prices are public list rates in USD/GPU/hour. Purpose-built ASICs (TPU, Trainium, LPU) are listed in dedicated Section 04.
+  </div>
+
+  <!-- NVIDIA Blackwell -->
+  <div class="sub-hd anim-in">NVIDIA Blackwell Generation — GB200 NVL72 / B200 / GB300 / B300 / B100</div>
+  <div class="panel anim-in">
+    <div class="tbl-wrap">
+      <table class="dt">
+        <thead><tr><th>SKU</th><th>Arch</th><th>VRAM</th><th>FP8 TFLOPS</th><th>NVLink</th><th>Nebius</th><th>Lambda</th><th>Together AI</th><th>AWS</th><th>Oracle</th><th>Google Cloud A4</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr class="hl"><td class="g">B200</td><td class="dim">Blackwell SXM6</td><td>192 GB HBM3e</td><td class="y">4,500</td><td class="gr">NVLink 5.0</td><td class="gr">$3.00rsv/$5.50od</td><td class="gr">$5.74–$5.97</td><td class="gr">$7.49od / $4.49+rsv</td><td class="y">Capacity Blocks</td><td class="y">Available</td><td class="y">$18.53/GPU (A4)</td><td class="d">Frontier; mostly reserved</td></tr>
+          <tr><td class="g">GB200</td><td class="dim">Grace Blackwell SXM</td><td>192 GB HBM3e</td><td class="y">4,500</td><td class="gr">NVLink 5.0</td><td class="y">Pre-order</td><td class="y">Cluster/quote</td><td class="y">Quote</td><td class="y">P6e-GB200</td><td class="dim">Quote</td><td class="dim">—</td><td class="d">NVLink72 rack; CPU+GPU unified</td></tr>
+          <tr><td class="g">GB300</td><td class="dim">Grace Blackwell NG</td><td>288 GB HBM3e</td><td class="y">~5,000+</td><td class="gr">NVLink 5.0</td><td class="y">Pre-order</td><td class="y">4k–165k+ cluster</td><td class="y">Quote</td><td class="y">P6-B300</td><td class="y">Available</td><td class="dim">—</td><td class="d">Frontier reserved only</td></tr>
+          <tr><td class="g">B300</td><td class="dim">Blackwell SXM/HGX</td><td>288 GB HBM3e</td><td class="y">~5,000+</td><td class="gr">NVLink 5.0</td><td class="dim">—</td><td class="y">Supercluster</td><td class="dim">—</td><td class="y">P6-B300</td><td class="y">Available</td><td class="dim">—</td><td class="d">Next-gen Blackwell</td></tr>
+          <tr><td class="g">HGX B300</td><td class="dim">8-GPU Server</td><td>288 GB×8</td><td class="dim">—</td><td class="gr">NVLink 5.0</td><td class="dim">—</td><td class="y">Supercluster</td><td class="dim">—</td><td class="dim">—</td><td class="dim">—</td><td class="dim">—</td><td class="d">Server-level unit</td></tr>
+          <tr><td class="g">B100</td><td class="dim">Blackwell SXM5</td><td>192 GB HBM3</td><td class="y">3,500</td><td class="gr">NVLink 4.0</td><td class="dim">—</td><td class="dim">—</td><td class="dim">—</td><td class="dim">—</td><td class="dim">—</td><td class="dim">—</td><td class="d">Limited; niche deployment</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- NVIDIA Hopper -->
+  <div class="sub-hd anim-in">NVIDIA Hopper Generation — H100 / H200 / GH200</div>
+  <div class="panel anim-in">
+    <div class="tbl-wrap">
+      <table class="dt">
+        <thead><tr><th>SKU</th><th>VRAM</th><th>FP8 TFLOPS</th><th>Nebius</th><th>Lambda</th><th>RunPod</th><th>Hyperstack</th><th>Together AI</th><th>Vast.ai</th><th>Oracle (AED)</th><th>Google Cloud</th></tr></thead>
+        <tbody>
+          <tr class="hl"><td class="g">H100 SXM</td><td>80 GB HBM3</td><td class="y">1,979</td><td class="gr">$2.95</td><td class="gr">$3.44–$3.67</td><td class="gr">$2.69</td><td class="gr">$2.40</td><td class="gr">$3.49 cluster</td><td class="gr">~$2.20</td><td class="y">AED 36.73</td><td class="y">~$12.63/GPU (A3)</td></tr>
+          <tr><td class="g">H100 PCIe</td><td>80 GB HBM2e</td><td class="y">1,513</td><td class="dim">—</td><td class="dim">—</td><td class="gr">$1.99</td><td class="gr">$1.90</td><td class="dim">—</td><td class="gr">$1.53</td><td class="dim">—</td><td class="dim">—</td></tr>
+          <tr><td class="g">H100 NVL</td><td>94 GB HBM3</td><td class="y">1,979</td><td class="dim">—</td><td class="dim">—</td><td class="gr">$2.59</td><td class="gr">$1.95</td><td class="dim">—</td><td class="gr">~$2.00</td><td class="dim">—</td><td class="dim">—</td></tr>
+          <tr class="hl"><td class="g">H200 SXM</td><td>141 GB HBM3e</td><td class="y">1,979</td><td class="gr">$2.30rsv/$3.50od</td><td class="dim">—</td><td class="dim">—</td><td class="gr">$3.50</td><td class="gr">$4.19 cluster</td><td class="gr">~$3.20</td><td class="dim">—</td><td class="y">~$12.47/GPU (A3 Ultra)</td></tr>
+          <tr><td class="g">GH200</td><td>96 GB HBM3 + 480 GB LPDDR5x</td><td class="y">1,979</td><td class="dim">—</td><td class="dim">—</td><td class="dim">—</td><td class="dim">—</td><td class="dim">—</td><td class="dim">—</td><td class="dim">—</td><td class="d">Supercomputer configs only</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- NVIDIA Ampere / Ada -->
+  <div class="sub-hd anim-in">NVIDIA Ampere &amp; Ada Lovelace — A100 / L40S / L4 / A40 / A30 / A10</div>
+  <div class="panel anim-in">
+    <div class="tbl-wrap">
+      <table class="dt">
+        <thead><tr><th>SKU</th><th>Gen</th><th>VRAM</th><th>Nebius</th><th>Lambda</th><th>RunPod</th><th>Hyperstack</th><th>Vast.ai</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr class="hl"><td class="g">A100 SXM 80 GB</td><td class="dim">Ampere</td><td>80 GB HBM2e</td><td class="gr">$2.00 rsv</td><td class="gr">$2.06</td><td class="dim">—</td><td class="gr">$1.60</td><td class="gr">~$1.40</td><td class="d">Best P/P for mid-tier training</td></tr>
+          <tr><td class="g">A100 PCIe 80 GB</td><td class="dim">Ampere</td><td>80 GB HBM2e</td><td class="dim">—</td><td class="gr">$1.48</td><td class="gr">$1.19</td><td class="gr">$1.35–$1.40</td><td class="gr">~$1.10</td><td class="d">Most competitive A100</td></tr>
+          <tr><td class="g">A100 PCIe 40 GB</td><td class="dim">Ampere</td><td>40 GB HBM2</td><td class="dim">—</td><td class="dim">—</td><td class="dim">—</td><td class="gr">$1.35</td><td class="gr">~$0.85</td><td class="d">Budget A100 inference</td></tr>
+          <tr><td class="g">A40</td><td class="dim">Ampere</td><td>48 GB GDDR6</td><td class="dim">—</td><td class="dim">—</td><td class="gr">~$0.79</td><td class="dim">—</td><td class="gr">~$0.55</td><td class="d">Good for inference; lower cost</td></tr>
+          <tr><td class="g">A30</td><td class="dim">Ampere</td><td>24 GB HBM2</td><td class="dim">—</td><td class="dim">—</td><td class="gr">~$0.59</td><td class="dim">—</td><td class="gr">~$0.40</td><td class="d">Mid-tier inference</td></tr>
+          <tr><td class="g">A10</td><td class="dim">Ampere</td><td>24 GB GDDR6</td><td class="dim">—</td><td class="dim">—</td><td class="gr">~$0.40</td><td class="dim">—</td><td class="gr">~$0.28</td><td class="d">Cost-efficient inference</td></tr>
+          <tr><td class="g">A16</td><td class="dim">Ampere</td><td>4×16 GB GDDR6</td><td class="dim">—</td><td class="dim">—</td><td class="dim">—</td><td class="dim">—</td><td class="gr">~$0.25</td><td class="d">VDI / light inference</td></tr>
+          <tr><td class="g">A2</td><td class="dim">Ampere</td><td>16 GB GDDR6</td><td class="dim">—</td><td class="dim">—</td><td class="dim">—</td><td class="dim">—</td><td class="gr">~$0.15</td><td class="d">Entry-level inference</td></tr>
+          <tr class="hl"><td class="g">L40S</td><td class="dim">Ada</td><td>48 GB GDDR6 ECC</td><td class="gr">~$1.40</td><td class="dim">—</td><td class="gr">~$1.35</td><td class="dim">—</td><td class="gr">~$0.95</td><td class="d">Best Ada for LLM inference</td></tr>
+          <tr><td class="g">L40</td><td class="dim">Ada</td><td>48 GB GDDR6</td><td class="dim">—</td><td class="dim">—</td><td class="gr">~$1.14</td><td class="dim">—</td><td class="gr">~$0.80</td><td class="d">Inference &amp; rendering</td></tr>
+          <tr><td class="g">L4</td><td class="dim">Ada</td><td>24 GB GDDR6</td><td class="dim">—</td><td class="dim">—</td><td class="gr">~$0.33</td><td class="dim">—</td><td class="gr">~$0.22</td><td class="d">Efficient inference; GCP L4</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- NVIDIA RTX Consumer -->
+  <div class="sub-hd anim-in">NVIDIA RTX Consumer &amp; Professional — Ada (40-series) / Ampere (30-series)</div>
+  <div class="panel anim-in">
+    <div class="tbl-wrap">
+      <table class="dt">
+        <thead><tr><th>SKU</th><th>VRAM</th><th>RunPod</th><th>Vast.ai</th><th>TensorDock</th><th>Salad Cloud</th><th>Use Case</th></tr></thead>
+        <tbody>
+          <tr class="hl"><td class="g">RTX 4090</td><td>24 GB GDDR6X</td><td class="gr">$0.69</td><td class="gr">$0.45–$0.60</td><td class="gr">$0.50</td><td class="gr">~$0.40</td><td class="d">High-speed consumer inference; fine-tuning</td></tr>
+          <tr><td class="g">RTX 4080 SUPER</td><td>16 GB GDDR6X</td><td class="gr">~$0.45</td><td class="gr">~$0.35</td><td class="dim">—</td><td class="gr">~$0.30</td><td class="d">Budget inference</td></tr>
+          <tr><td class="g">RTX 4080</td><td>16 GB GDDR6X</td><td class="gr">~$0.40</td><td class="gr">~$0.30</td><td class="dim">—</td><td class="dim">—</td><td class="d">Budget inference</td></tr>
+          <tr><td class="g">RTX 4070 Ti SUPER</td><td>16 GB GDDR6X</td><td class="dim">—</td><td class="gr">~$0.25</td><td class="gr">~$0.20</td><td class="dim">—</td><td class="d">Light inference</td></tr>
+          <tr><td class="g">RTX 4070 SUPER</td><td>12 GB GDDR6X</td><td class="dim">—</td><td class="gr">~$0.20</td><td class="dim">—</td><td class="dim">—</td><td class="d">Light tasks</td></tr>
+          <tr><td class="g">RTX 4070 Ti</td><td>12 GB GDDR6X</td><td class="dim">—</td><td class="gr">~$0.22</td><td class="dim">—</td><td class="dim">—</td><td class="d">Light tasks</td></tr>
+          <tr><td class="g">RTX 4070</td><td>12 GB GDDR6X</td><td class="dim">—</td><td class="gr">~$0.18</td><td class="dim">—</td><td class="dim">—</td><td class="d">Entry inference</td></tr>
+          <tr><td class="g">RTX 4060 Ti</td><td>16 GB GDDR6</td><td class="dim">—</td><td class="gr">~$0.14</td><td class="dim">—</td><td class="dim">—</td><td class="d">Very light tasks</td></tr>
+          <tr><td class="g">RTX 4060</td><td>8 GB GDDR6</td><td class="dim">—</td><td class="gr">~$0.10</td><td class="dim">—</td><td class="dim">—</td><td class="d">Minimum viable inference</td></tr>
+          <tr class="hl"><td class="g">RTX 6000 Ada</td><td>48 GB GDDR6</td><td class="dim">—</td><td class="gr">~$0.90</td><td class="dim">—</td><td class="dim">—</td><td class="d">Pro workstation inference</td></tr>
+          <tr><td class="g">RTX 6000 Pro</td><td>96 GB GDDR7</td><td class="dim">—</td><td class="y">Emerging</td><td class="dim">—</td><td class="dim">—</td><td class="d">Next-gen pro workstation</td></tr>
+          <tr><td class="g">RTX 4500 Ada</td><td>24 GB GDDR6</td><td class="dim">—</td><td class="gr">~$0.50</td><td class="dim">—</td><td class="dim">—</td><td class="d">Pro workstation</td></tr>
+          <tr><td class="g">RTX 4000 Ada</td><td>20 GB GDDR6</td><td class="dim">—</td><td class="gr">~$0.35</td><td class="dim">—</td><td class="dim">—</td><td class="d">Professional workstation</td></tr>
+          <tr><td class="g">RTX A6000</td><td>48 GB GDDR6</td><td class="gr">~$0.79</td><td class="gr">~$0.70</td><td class="dim">—</td><td class="dim">—</td><td class="d">Lambda also: $0.92</td></tr>
+          <tr><td class="g">RTX A5000</td><td>24 GB GDDR6</td><td class="dim">—</td><td class="gr">~$0.45</td><td class="dim">—</td><td class="dim">—</td><td class="d">Mid-tier pro</td></tr>
+          <tr><td class="g">RTX A4000</td><td>16 GB GDDR6</td><td class="dim">—</td><td class="gr">~$0.25</td><td class="dim">—</td><td class="dim">—</td><td class="d">Entry pro workstation</td></tr>
+          <tr><td class="g">RTX 5000</td><td>16 GB GDDR6</td><td class="dim">—</td><td class="gr">~$0.32</td><td class="dim">—</td><td class="dim">—</td><td class="d">Quadro-era pro GPU</td></tr>
+          <tr><td class="g">RTX 3090 Ti</td><td>24 GB GDDR6X</td><td class="gr">~$0.54</td><td class="gr">~$0.38</td><td class="dim">—</td><td class="dim">—</td><td class="d">Prev-gen; still useful for inference</td></tr>
+          <tr><td class="g">RTX 3090</td><td>24 GB GDDR6X</td><td class="gr">~$0.44</td><td class="gr">~$0.28</td><td class="gr">~$0.25</td><td class="dim">—</td><td class="d">Popular Ampere consumer GPU</td></tr>
+          <tr><td class="g">RTX 3080 Ti</td><td>12 GB GDDR6X</td><td class="dim">—</td><td class="gr">~$0.20</td><td class="dim">—</td><td class="dim">—</td><td class="d">Limited VRAM for large models</td></tr>
+          <tr><td class="g">RTX 3080</td><td>10/12 GB GDDR6X</td><td class="dim">—</td><td class="gr">~$0.16</td><td class="dim">—</td><td class="dim">—</td><td class="d">Budget light inference</td></tr>
+          <tr><td class="g">RTX 3070 Ti</td><td>8 GB GDDR6X</td><td class="dim">—</td><td class="gr">~$0.12</td><td class="dim">—</td><td class="dim">—</td><td class="d">Very constrained VRAM</td></tr>
+          <tr><td class="g">RTX 3070</td><td>8 GB GDDR6</td><td class="dim">—</td><td class="gr">~$0.10</td><td class="dim">—</td><td class="dim">—</td><td class="d">Minimum viable</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- NVIDIA Legacy -->
+  <div class="sub-hd anim-in">NVIDIA Legacy Data Center — V100 / T4 / P40 / K80</div>
+  <div class="panel anim-in">
+    <div class="tbl-wrap">
+      <table class="dt">
+        <thead><tr><th>SKU</th><th>VRAM</th><th>Lambda</th><th>RunPod</th><th>Vast.ai</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td class="g">Tesla V100 SXM2</td><td>16/32 GB HBM2</td><td class="gr">$0.63</td><td class="gr">~$0.55</td><td class="gr">~$0.35</td><td class="d">Budget training/fine-tuning</td></tr>
+          <tr><td class="g">Tesla T4</td><td>16 GB GDDR6</td><td class="dim">—</td><td class="gr">~$0.22</td><td class="gr">~$0.18</td><td class="d">Google Cloud standard; cost-efficient inference</td></tr>
+          <tr><td class="g">P40</td><td>24 GB GDDR5X</td><td class="dim">—</td><td class="dim">—</td><td class="gr">~$0.12</td><td class="d">Legacy; limited availability</td></tr>
+          <tr><td class="g">K80</td><td>24 GB GDDR5</td><td class="dim">—</td><td class="dim">—</td><td class="gr">~$0.05</td><td class="r">Deprecated; minimal utility</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- AMD -->
+  <div class="sub-hd anim-in">AMD ROCm / CDNA — Instinct Series (MI300X · MI325X · MI355X · MI250X · MI210 · MI100)</div>
+  <div class="panel anim-in">
+    <div class="tbl-wrap">
+      <table class="dt">
+        <thead><tr><th>SKU</th><th>Gen</th><th>VRAM</th><th>BF16 TFLOPS</th><th>TensorWave</th><th>Oracle</th><th>IBM Cloud</th><th>Vast.ai</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr class="hl"><td style="color:#fca5a5">MI300X</td><td class="dim">CDNA 3</td><td>192 GB HBM3</td><td class="y">1,307</td><td class="gr">Competitive (quote)</td><td class="gr">Available</td><td class="dim">—</td><td class="gr">~$2.50</td><td class="d">Largest VRAM pool; AMD flagship</td></tr>
+          <tr><td style="color:#fca5a5">MI325X</td><td class="dim">CDNA 3+</td><td>256 GB HBM3E</td><td class="y">1,307</td><td class="y">Quote</td><td class="y">Available</td><td class="dim">—</td><td class="y">Emerging</td><td class="d">Competitors to H200/B200</td></tr>
+          <tr><td style="color:#fca5a5">MI355X</td><td class="dim">CDNA 4</td><td>288 GB HBM3E</td><td class="y">~2,000</td><td class="y">Quote</td><td class="y">Available</td><td class="dim">—</td><td class="dim">—</td><td class="d">Latest AMD; Blackwell competitor</td></tr>
+          <tr><td style="color:#fca5a5">MI300A</td><td class="dim">CDNA 3 APU</td><td>128 GB HBM3 unified</td><td class="y">1,307</td><td class="dim">—</td><td class="y">Available</td><td class="dim">—</td><td class="dim">—</td><td class="d">APU form factor; CPU+GPU unified memory</td></tr>
+          <tr><td style="color:#fca5a5">MI250X</td><td class="dim">CDNA 2</td><td>128 GB HBM2e</td><td class="y">383</td><td class="dim">—</td><td class="gr">Available</td><td class="dim">—</td><td class="gr">~$1.60</td><td class="d">Previous gen; HPC-focused</td></tr>
+          <tr><td style="color:#fca5a5">MI250</td><td class="dim">CDNA 2</td><td>128 GB HBM2e</td><td class="y">362</td><td class="dim">—</td><td class="dim">—</td><td class="dim">—</td><td class="gr">~$1.40</td><td class="d">HPC workloads</td></tr>
+          <tr><td style="color:#fca5a5">MI210</td><td class="dim">CDNA 2</td><td>64 GB HBM2e</td><td class="y">181</td><td class="dim">—</td><td class="dim">—</td><td class="dim">—</td><td class="gr">~$0.90</td><td class="d">Older gen; limited availability</td></tr>
+          <tr><td style="color:#fca5a5">MI100</td><td class="dim">CDNA 1</td><td>32 GB HBM2</td><td class="y">92</td><td class="dim">—</td><td class="dim">—</td><td class="dim">—</td><td class="gr">~$0.50</td><td class="d">Legacy; limited ROCm support</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Intel Gaudi -->
+  <div class="sub-hd anim-in">Intel Gaudi AI Accelerators — Gaudi 3 / Gaudi 2</div>
+  <div class="panel anim-in">
+    <div class="tbl-wrap">
+      <table class="dt">
+        <thead><tr><th>SKU</th><th>Memory</th><th>BF16 TFLOPS</th><th>IBM Cloud</th><th>Intel Developer Cloud</th><th>AWS</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr class="hl"><td style="color:#93c5fd">Gaudi 3</td><td>128 GB HBM2e</td><td class="y">1,835</td><td class="gr">Available (Watsonx)</td><td class="gr">Available</td><td class="gr">DL2q instances</td><td class="d">Latest Gaudi; ~30% cheaper than H100 comparable; strong transformer workloads</td></tr>
+          <tr><td style="color:#93c5fd">Gaudi 2</td><td>96 GB HBM2e</td><td class="y">432</td><td class="gr">Available</td><td class="gr">Available</td><td class="gr">DL1 instances</td><td class="d">Mature Gaudi; production-ready LLM training</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Intel Max (Ponte Vecchio) -->
+  <div class="sub-hd anim-in">Intel Max Series (Ponte Vecchio) — HPC Accelerators</div>
+  <div class="panel anim-in">
+    <div class="tbl-wrap">
+      <table class="dt">
+        <thead><tr><th>SKU</th><th>Memory</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td style="color:#93c5fd">Max 1100</td><td>48 GB HBM2e</td><td class="d">Intel Max series; HPC exascale compute</td></tr>
+          <tr><td style="color:#93c5fd">Max 1550</td><td>128 GB HBM2e</td><td class="d">Flagship Intel Max; exascale HPC; limited commercial cloud deployment</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</section>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- 03. GPU PRICING MATRIX                         -->
+<!-- ═══════════════════════════════════════════════ -->
+<section class="section" id="pricing">
+  <div class="section-header anim-in">
+    <div class="section-title">GPU Pricing Matrix</div>
+    <div class="section-sub">Public reference rates USD/GPU/hr — not negotiated enterprise pricing — March 2026</div>
+  </div>
+
+  <div class="note anim-in">
+    <span>Note:</span> All prices are public list rates in USD/GPU/hour. Reserved/committed pricing is typically 20–50% lower than on-demand. Vast.ai and marketplace rates fluctuate with live supply. <span>Blackwell (B200/GB200)</span> is mostly reserved. <span>Hopper H100/H200</span> is the production benchmark. Hyperscaler pricing includes managed infra overhead — significantly higher per-GPU than bare-metal specialists.
+  </div>
+
+  <!-- H100 comparison bar chart -->
+  <div class="chart-panel anim-in">
+    <div class="panel-header">
+      <span class="panel-title">H100 SXM On-Demand Price Comparison by Provider</span>
+      <span class="panel-sub">$/GPU/hr — lower is cheaper</span>
+    </div>
+    <div class="chart-body">
+      <canvas id="chartH100Prices" style="max-height:280px"></canvas>
+    </div>
+  </div>
+
+  <div class="chart-row anim-in">
+    <div class="chart-panel">
+      <div class="panel-header">
+        <span class="panel-title">GPU Tier Price Range Overview</span>
+        <span class="panel-sub">$/GPU/hr — on-demand floor to ceiling</span>
+      </div>
+      <div class="chart-body">
+        <canvas id="chartGpuTierRange" style="max-height:280px"></canvas>
+      </div>
+    </div>
+    <div class="chart-panel">
+      <div class="panel-header">
+        <span class="panel-title">Cost per TFLOP — Cross-Vendor Comparison</span>
+        <span class="panel-sub">Estimated $/BF16 TFLOPS at listed on-demand price</span>
+      </div>
+      <div class="chart-body">
+        <canvas id="chartCostPerTflop" style="max-height:280px"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Frontier GPU comparison table -->
+  <div class="sub-hd anim-in">H100 / H200 SXM Full Provider Spread</div>
+  <div class="panel anim-in">
+    <div class="tbl-wrap">
+      <table class="dt">
+        <thead><tr><th>Provider</th><th>GPU</th><th>On-Demand $/GPU/hr</th><th>Reserved $/GPU/hr</th><th>Spot</th><th>Type</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr class="hl"><td class="g">Vast.ai</td><td class="d">H100 PCIe</td><td class="gr">$0.90–$1.53</td><td class="dim">—</td><td class="gr">Yes</td><td><span class="tag tag-mkt">Marketplace</span></td><td class="d">Live bid marketplace; lowest floor</td></tr>
+          <tr><td class="g">Hyperstack</td><td class="d">H100 PCIe</td><td class="gr">$1.90</td><td class="gr">$1.60+</td><td class="gr">Yes (~–20%)</td><td><span class="tag tag-mkt">Marketplace</span></td><td class="d">UK/NL/CA/US</td></tr>
+          <tr><td class="g">RunPod</td><td class="d">H100 PCIe</td><td class="gr">$1.99</td><td class="gr">$1.69+</td><td class="y">Limited</td><td><span class="tag tag-mkt">Marketplace</span></td><td class="d">Self-serve; savings plans</td></tr>
+          <tr><td class="g">Hyperstack</td><td class="d">H100 SXM</td><td class="gr">$2.40</td><td class="gr">$1.95+</td><td class="gr">Yes</td><td><span class="tag tag-mkt">Marketplace</span></td><td class="d">Aggressive pricing</td></tr>
+          <tr><td class="g">RunPod</td><td class="d">H100 SXM</td><td class="gr">$2.69</td><td class="y">Savings plan</td><td class="dim">No</td><td><span class="tag tag-mkt">Marketplace</span></td><td class="d">Strong self-serve option</td></tr>
+          <tr><td class="g">Nebius</td><td class="d">H100 SXM (HGX)</td><td class="gr">$2.95</td><td class="gr">$2.00 rsv</td><td class="dim">No</td><td><span class="tag tag-neo">Neo-Cloud</span></td><td class="d">SLA + cluster services</td></tr>
+          <tr class="hl"><td class="g">Lambda</td><td class="d">H100 SXM</td><td class="y">$3.44–$3.67</td><td class="y">Volume</td><td class="dim">No</td><td><span class="tag tag-neo">Neo-Cloud</span></td><td class="d">Production SLA</td></tr>
+          <tr><td class="g">Together AI (cluster)</td><td class="d">HGX H100</td><td class="y">$3.49</td><td class="gr">$2.25 (6mo+)</td><td class="dim">No</td><td><span class="tag tag-neo">Neo-Cloud</span></td><td class="d">Hybrid compute + API</td></tr>
+          <tr><td class="g">Oracle Cloud</td><td class="d">H100 SXM BM</td><td class="y">AED 36.73/hr</td><td class="y">Universal Credits</td><td class="dim">—</td><td><span class="tag tag-hyper">Hyperscaler</span></td><td class="d">Bare-metal GPU VMs; UAE region</td></tr>
+          <tr><td class="r">Google Cloud</td><td class="d">H100 SXM (A3)</td><td class="r">~$12.63/GPU</td><td class="y">Committed Use</td><td class="y">Preemptible</td><td><span class="tag tag-hyper">Hyperscaler</span></td><td class="d">8-GPU A3 highgpu instance / 8</td></tr>
+          <tr><td class="r">Google Cloud</td><td class="d">H200 SXM (A3 Ultra)</td><td class="r">~$12.47/GPU</td><td class="y">Committed Use</td><td class="y">Preemptible</td><td><span class="tag tag-hyper">Hyperscaler</span></td><td class="d">A3 ultragpu-8g</td></tr>
+          <tr><td class="r">Google Cloud</td><td class="d">B200 (A4)</td><td class="r">~$18.53/GPU</td><td class="y">Committed Use</td><td class="dim">—</td><td><span class="tag tag-hyper">Hyperscaler</span></td><td class="d">A4 highgpu-8g; Blackwell</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="legend">
+      <div class="leg-item"><div class="leg-dot" style="background:#4ade80"></div> On-demand public rate</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#facc15"></div> Reserved or enterprise pricing</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#f87171"></div> Hyperscaler includes full managed infra overhead</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- 04. PURPOSE-BUILT ACCELERATORS                 -->
+<!-- ═══════════════════════════════════════════════ -->
+<section class="section" id="asic">
+  <div class="section-header anim-in">
+    <div class="section-title">Purpose-Built Accelerators</div>
+    <div class="section-sub">Non-GPU AI ASICs, neuromorphic chips, LPUs, and domain-specific silicon — March 2026</div>
+  </div>
+
+  <div class="note anim-in">
+    <span>Coverage:</span> All purpose-built AI accelerators with any measurable cloud or production deployment are reported below, including niche chips with &lt;0.01% market share. NVIDIA dominates 85–87% of AI compute globally; the remaining 13–15% spans the ecosystem below.
+  </div>
+
+  <!-- Accelerator market share chart -->
+  <div class="chart-row anim-in">
+    <div class="chart-panel">
+      <div class="panel-header">
+        <span class="panel-title">Purpose-Built Accelerator Share — Cloud AI Workloads</span>
+        <span class="panel-sub">Estimated deployment % (excluding NVIDIA)</span>
+      </div>
+      <div class="chart-body">
+        <canvas id="chartAsicShare" style="max-height:300px"></canvas>
+      </div>
+    </div>
+    <div class="chart-panel">
+      <div class="panel-header">
+        <span class="panel-title">Accelerator Performance vs Price — Frontier Comparison</span>
+        <span class="panel-sub">BF16 TFLOPS vs $/hr (on-demand or estimated)</span>
+      </div>
+      <div class="chart-body">
+        <canvas id="chartAsicPerfPrice" style="max-height:300px"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Google TPU -->
+  <div class="sub-hd anim-in"><span class="tag tag-google">Google</span> &nbsp; TPU v5e / v5p / v4 — Tensor Processing Units</div>
+  <div class="panel anim-in">
+    <div class="tbl-wrap">
+      <table class="dt">
+        <thead><tr><th>SKU</th><th>Gen</th><th>BF16 TFLOPS</th><th>HBM</th><th>GCP Price (on-demand)</th><th>Reserved</th><th>Best For</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr class="hl"><td style="color:#7dd3fc">TPU v5p</td><td class="dim">TPU 5th Gen</td><td class="y">459 per chip</td><td>95 GB HBM3</td><td class="y">~$4.20/chip/hr</td><td class="gr">~$2.80/chip/hr</td><td class="d">Large model training (&gt;50B)</td><td class="d">Most powerful TPU; Pod-level NVLink equivalent</td></tr>
+          <tr><td style="color:#7dd3fc">TPU v5e</td><td class="dim">TPU 5th Gen Efficient</td><td class="y">197 per chip</td><td>16 GB HBM3</td><td class="y">~$1.20/chip/hr</td><td class="gr">~$0.80/chip/hr</td><td class="d">Cost-efficient training + inference</td><td class="d">Best TCO for medium LLMs on GCP</td></tr>
+          <tr><td style="color:#7dd3fc">TPU v4</td><td class="dim">TPU 4th Gen</td><td class="y">275 per chip</td><td>32 GB HBM2</td><td class="y">~$3.22/chip/hr</td><td class="gr">~$2.10/chip/hr</td><td class="d">Production LLM training</td><td class="d">Google's internal training workhorse</td></tr>
+          <tr><td style="color:#7dd3fc">TPU v3</td><td class="dim">TPU 3rd Gen</td><td class="y">123 per chip</td><td>16 GB HBM</td><td class="gr">~$1.35/chip/hr</td><td class="gr">~$0.90/chip/hr</td><td class="d">Legacy workloads; still in active use</td><td class="d">Older gen; production training deployments</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="legend">
+      <div class="leg-item"><div class="leg-dot" style="background:#7dd3fc"></div> Google TPU is captive to GCP — not available on other cloud providers</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#facc15"></div> TPU pods connect via 3D torus topology — highly efficient for large models</div>
+    </div>
+  </div>
+
+  <!-- AWS Trainium / Inferentia -->
+  <div class="sub-hd anim-in"><span class="tag tag-amazon">AWS</span> &nbsp; Trainium 2 / Trainium 1 / Inferentia 2 — Custom Silicon</div>
+  <div class="panel anim-in">
+    <div class="tbl-wrap">
+      <table class="dt">
+        <thead><tr><th>SKU</th><th>Instance</th><th>BF16 TFLOPS</th><th>Memory</th><th>$/hr (Instance)</th><th>Best For</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr class="hl"><td style="color:#fcd34d">Trainium 2</td><td class="dim">trn2.48xlarge (16 chips)</td><td class="y">~1,900 per chip</td><td>96 GB HBM3 per chip</td><td class="y">~$35.80/instance</td><td class="d">LLM training &gt;100B; UltraCluster</td><td class="d">UltraClusters up to 65,536 chips; AWS flagship AI chip</td></tr>
+          <tr><td style="color:#fcd34d">Trainium 1</td><td class="dim">trn1.32xlarge (16 chips)</td><td class="y">~428 per chip</td><td>32 GB HBM2 per chip</td><td class="y">~$21.50/instance</td><td class="d">LLM training; mid-scale</td><td class="d">Production-ready; NeuronSDK matures</td></tr>
+          <tr><td style="color:#fcd34d">Inferentia 2</td><td class="dim">inf2.xlarge → inf2.48xlarge</td><td class="y">~380 per chip</td><td>32 GB per chip</td><td class="gr">~$0.76/hr (xl)</td><td class="d">Low-latency LLM inference at scale</td><td class="d">Best AWS option for production inference; ~40% cheaper than GPU equiv</td></tr>
+          <tr><td style="color:#fcd34d">Inferentia 1</td><td class="dim">inf1.xlarge → inf1.24xlarge</td><td class="y">~128 per chip</td><td>8 GB per chip</td><td class="gr">~$0.23/hr (xl)</td><td class="d">High-volume inference; older models</td><td class="d">Mature; limited model support</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="legend">
+      <div class="leg-item"><div class="leg-dot" style="background:#fcd34d"></div> AWS Trainium/Inferentia captive to AWS EC2 — not available on other clouds</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#a5b4fc"></div> NeuronSDK required — not fully compatible with PyTorch CUDA workflows out-of-the-box</div>
+    </div>
+  </div>
+
+  <!-- Groq LPU -->
+  <div class="sub-hd anim-in"><span class="tag tag-asic">Groq</span> &nbsp; LPU (Language Processing Unit) — GroqChip</div>
+  <div class="panel anim-in">
+    <div class="tbl-wrap">
+      <table class="dt">
+        <thead><tr><th>SKU</th><th>Architecture</th><th>Memory</th><th>Inference Speed</th><th>Access</th><th>Best For</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr class="hl"><td style="color:#d8b4fe">GroqChip 1 (LPU)</td><td class="dim">SIMD / Streaming</td><td>230 MB on-chip SRAM</td><td class="gr">750+ tok/s (Llama 8B)</td><td class="gr">groq.com API</td><td class="d">Ultra-low latency inference</td><td class="d">Fastest publicly available inference; no batching needed; deterministic latency</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="legend">
+      <div class="leg-item"><div class="leg-dot" style="background:#d8b4fe"></div> Groq LPU is inference-only — not designed for training workloads</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#facc15"></div> Groq charges per token, not per GPU/hr — $0.05/1M input tokens (Llama 3.1 8B)</div>
+    </div>
+  </div>
+
+  <!-- Cerebras -->
+  <div class="sub-hd anim-in"><span class="tag tag-asic">Cerebras</span> &nbsp; WSE-3 — Wafer Scale Engine</div>
+  <div class="panel anim-in">
+    <div class="tbl-wrap">
+      <table class="dt">
+        <thead><tr><th>SKU</th><th>Die Size</th><th>Cores</th><th>On-chip SRAM</th><th>Access</th><th>Best For</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr class="hl"><td style="color:#67e8f9">WSE-3</td><td class="dim">Wafer-scale (full 300mm)</td><td class="y">900,000 AI cores</td><td>44 GB SRAM</td><td class="gr">Cerebras Cloud API + dedicated</td><td class="d">Ultra-fast training; sparse workloads</td><td class="d">Fastest training per model parameter for supported workloads; near-zero memory latency</td></tr>
+          <tr><td style="color:#67e8f9">WSE-2</td><td class="dim">Wafer-scale</td><td class="y">850,000 AI cores</td><td>40 GB SRAM</td><td class="y">Enterprise dedicated</td><td class="d">Large model training</td><td class="d">Previous gen; production deployments</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="legend">
+      <div class="leg-item"><div class="leg-dot" style="background:#67e8f9"></div> Cerebras WSE: single chip = single wafer — eliminates inter-chip communication bottleneck</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#facc15"></div> ~$0.23% non-NVIDIA cloud share; growing for targeted sparse model training</div>
+    </div>
+  </div>
+
+  <!-- SambaNova -->
+  <div class="sub-hd anim-in"><span class="tag tag-asic">SambaNova</span> &nbsp; SN40L Reconfigurable Dataflow Unit</div>
+  <div class="panel anim-in">
+    <div class="tbl-wrap">
+      <table class="dt">
+        <thead><tr><th>SKU</th><th>Architecture</th><th>Memory</th><th>Access</th><th>Best For</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td style="color:#f9a8d4">SN40L</td><td class="dim">RDU (Reconfigurable Dataflow)</td><td>1.5 TB DDR5 + HBM</td><td class="gr">SambaNova Cloud API</td><td class="d">Enterprise LLM serving; Llama 405B</td><td class="d">Runs full 405B natively; ~0.15% non-NVIDIA share; govt &amp; enterprise deployments</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Graphcore -->
+  <div class="sub-hd anim-in"><span class="tag tag-asic">Graphcore</span> &nbsp; IPU — Intelligence Processing Unit (Bow)</div>
+  <div class="panel anim-in">
+    <div class="tbl-wrap">
+      <table class="dt">
+        <thead><tr><th>SKU</th><th>Architecture</th><th>On-chip SRAM</th><th>Access</th><th>Best For</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td style="color:#fde68a">IPU-M2000 (Bow)</td><td class="dim">Bulk Synchronous Parallel</td><td>450 MB SRAM per IPU</td><td class="y">Graphcore cloud / OEM</td><td class="d">Graph neural nets; sparse models</td><td class="d">~0.11% non-NVIDIA share; strong for GNN &amp; specific ML workloads; Poplar SDK</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Tenstorrent -->
+  <div class="sub-hd anim-in"><span class="tag tag-asic">Tenstorrent</span> &nbsp; Wormhole / Blackhole</div>
+  <div class="panel anim-in">
+    <div class="tbl-wrap">
+      <table class="dt">
+        <thead><tr><th>SKU</th><th>Architecture</th><th>VRAM/Memory</th><th>Access</th><th>Best For</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td style="color:#86efac">n150 Wormhole</td><td class="dim">Tensix cores; mesh NoC</td><td>12 GB GDDR6</td><td class="gr">on-prem / developer kits</td><td class="d">Edge inference; open source ecosystem</td><td class="d">~0.08% share; Jim Keller-led; fully open-source toolchain (TT-Buda)</td></tr>
+          <tr><td style="color:#86efac">p100 Blackhole</td><td class="dim">Next-gen Tensix</td><td>32 GB LPDDR5</td><td class="y">Pre-production</td><td class="d">Data center inference</td><td class="d">Next-gen; claiming 10× efficiency vs. Wormhole</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Furiosa -->
+  <div class="sub-hd anim-in"><span class="tag tag-asic">FuriosaAI</span> &nbsp; RNGD (Rebel Next Generation Device)</div>
+  <div class="panel anim-in">
+    <div class="tbl-wrap">
+      <table class="dt">
+        <thead><tr><th>SKU</th><th>BF16 TFLOPS</th><th>Memory</th><th>Access</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td style="color:#a7f3d0">RNGD</td><td class="y">~2,000</td><td>48 GB HBM3</td><td class="y">Korea cloud partners; pilot</td><td class="d">~0.04% share; Korean AI chip startup; LLM inference focus; competitive spec vs. H100</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Moffett-AI -->
+  <div class="sub-hd anim-in"><span class="tag tag-asic">Moffett-AI</span> &nbsp; Antoum S30 — Sparse AI Accelerator</div>
+  <div class="panel anim-in">
+    <div class="tbl-wrap">
+      <table class="dt">
+        <thead><tr><th>SKU</th><th>Architecture</th><th>Memory</th><th>Access</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td style="color:#f9a8d4">Antoum S30</td><td class="dim">Sparse compute architecture</td><td>16 GB LPDDR5</td><td class="y">China market / OEM</td><td class="d">~0.02% share; 10× sparsity advantage on structured-sparse models; primarily China-deployed</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Biren -->
+  <div class="sub-hd anim-in"><span class="tag tag-asic">Biren Technology</span> &nbsp; BR100 — High-Performance GPU (China)</div>
+  <div class="panel anim-in">
+    <div class="tbl-wrap">
+      <table class="dt">
+        <thead><tr><th>SKU</th><th>Architecture</th><th>VRAM</th><th>BF16 TFLOPS</th><th>Access</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td style="color:#c4b5fd">BR100</td><td class="dim">BIREN GPU Architecture (BGA)</td><td>64 GB HBM2e</td><td class="y">~1,000</td><td class="y">China domestic cloud</td><td class="d">~0.01% global share; strong specs on paper; China-only due to US export controls; limited ROCm-equiv tooling maturity</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Hailo -->
+  <div class="sub-hd anim-in"><span class="tag tag-asic">Hailo</span> &nbsp; H15 / Hailo-8 — Edge AI Accelerators</div>
+  <div class="panel anim-in">
+    <div class="tbl-wrap">
+      <table class="dt">
+        <thead><tr><th>SKU</th><th>Power</th><th>INT8 TOPS</th><th>Best For</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td style="color:#fde68a">Hailo-15</td><td class="gr">5W</td><td class="y">40</td><td class="d">Edge vision AI; autonomous vehicles</td><td class="d">Not cloud-deployed; embedded/edge form factor; &lt;0.01% cloud share but significant edge deployment</td></tr>
+          <tr><td style="color:#fde68a">Hailo-8</td><td class="gr">2.5W</td><td class="y">26</td><td class="d">Edge inference; IoT</td><td class="d">Widely deployed in embedded systems; Raspberry Pi M.2 hat</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</section>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- 05. CLOUD PROVIDERS                            -->
+<!-- ═══════════════════════════════════════════════ -->
+<section class="section" id="providers">
+  <div class="section-header anim-in">
+    <div class="section-title">Cloud Provider Directory</div>
+    <div class="section-sub">48 providers across 4 categories — filterable — March 2026</div>
+  </div>
+
+  <div class="filter-bar anim-in">
+    <input class="finput" type="text" id="provSearch" placeholder="Search providers..." oninput="filterProvs()">
+    <button class="fbtn active" onclick="filterByType('all',this)">All</button>
+    <button class="fbtn" onclick="filterByType('neo',this)">Neo-Cloud</button>
+    <button class="fbtn" onclick="filterByType('hyper',this)">Hyperscaler</button>
+    <button class="fbtn" onclick="filterByType('mkt',this)">Marketplace</button>
+    <button class="fbtn" onclick="filterByType('api',this)">API/Inference</button>
+    <span class="fcount" id="provCount">48 providers</span>
+  </div>
+
+  <div class="panel anim-in">
+    <div class="tbl-wrap">
+      <table class="dt">
+        <thead><tr><th>#</th><th>Provider</th><th>Type</th><th>HQ</th><th>Hardware</th><th>Regions</th><th>Pricing Model</th><th>Notes</th></tr></thead>
+        <tbody id="provTable">
+          <tr data-type="neo"><td class="dim">1</td><td class="g">CoreWeave</td><td><span class="tag tag-neo">Neo-Cloud</span></td><td class="d">USA (NJ)</td><td>H100, H200, B200, GB200</td><td class="d">US, EU</td><td class="d">Reserved clusters</td><td class="d">Largest pure-play GPU cloud; NVIDIA partnership; HGX cluster specialist</td></tr>
+          <tr data-type="neo"><td class="dim">2</td><td class="g">Lambda Labs</td><td><span class="tag tag-neo">Neo-Cloud</span></td><td class="d">USA (CA)</td><td>H100, H200, A100, B200, V100</td><td class="d">US, EU</td><td class="d">On-demand + reserved</td><td class="d">Transparent pricing; ML-native UX; supercluster roadmap</td></tr>
+          <tr data-type="neo"><td class="dim">3</td><td class="g">Nebius AI Cloud</td><td><span class="tag tag-neo">Neo-Cloud</span></td><td class="d">Netherlands</td><td>H100, H200, B200 (pre-order)</td><td class="d">EU (FI, FR, IS, DE)</td><td class="d">On-demand + reserved</td><td class="d">Yandex spin-off; aggressive reserved pricing; EU data residency</td></tr>
+          <tr data-type="neo"><td class="dim">4</td><td class="g">Together AI</td><td><span class="tag tag-neo">Neo-Cloud</span></td><td class="d">USA (CA)</td><td>H100, H200, B200 clusters</td><td class="d">US</td><td class="d">GPU clusters + API tokens</td><td class="d">Hybrid: infra + open-model API; frontier cluster access</td></tr>
+          <tr data-type="neo"><td class="dim">5</td><td class="g">Crusoe Energy</td><td><span class="tag tag-neo">Neo-Cloud</span></td><td class="d">USA (CO)</td><td>H100, H200, B200</td><td class="d">US West, Midwest</td><td class="d">Reserved (energy-optimized)</td><td class="d">Stranded energy compute; carbon-neutral focus; frontier clusters</td></tr>
+          <tr data-type="neo"><td class="dim">6</td><td class="g">Voltage Park</td><td><span class="tag tag-neo">Neo-Cloud</span></td><td class="d">USA</td><td>H100, B200</td><td class="d">US</td><td class="d">Reserved clusters</td><td class="d">Large-scale H100 cluster operator; enterprise focus</td></tr>
+          <tr data-type="neo"><td class="dim">7</td><td class="g">OCI (Oracle Cloud)</td><td><span class="tag tag-hyper">Hyperscaler</span></td><td class="d">USA (TX)</td><td>H100, H200, B200, B300, GB300, MI300X</td><td class="d">44 regions; strong UAE/MEA</td><td class="d">On-demand + reserved + universal credits</td><td class="d">Most transparent hyperscaler GPU pricing; bare-metal GPU VMs; best MEA presence</td></tr>
+          <tr data-type="neo"><td class="dim">8</td><td class="g">Fluidstack</td><td><span class="tag tag-neo">Neo-Cloud</span></td><td class="d">UK</td><td>H100, A100</td><td class="d">EU compute focus</td><td class="d">Enterprise reserved</td><td class="d">EU compute; large-scale inference deployments</td></tr>
+          <tr data-type="neo"><td class="dim">9</td><td class="g">Genesis Cloud</td><td><span class="tag tag-neo">Neo-Cloud</span></td><td class="d">Germany</td><td>H100, A100</td><td class="d">Iceland, Germany</td><td class="d">On-demand</td><td class="d">100% renewable energy; strong EU sovereignty</td></tr>
+          <tr data-type="neo"><td class="dim">10</td><td class="g">Latitude.sh</td><td><span class="tag tag-neo">Neo-Cloud</span></td><td class="d">Brazil</td><td>A100, H100</td><td class="d">LatAm + US</td><td class="d">On-demand bare-metal</td><td class="d">LatAm specialist; Brazilian cloud infra</td></tr>
+          <tr data-type="neo"><td class="dim">11</td><td class="g">AceCloud</td><td><span class="tag tag-neo">Neo-Cloud</span></td><td class="d">USA</td><td>H100, A100, RTX 4090</td><td class="d">US</td><td class="d">On-demand</td><td class="d">Cost-competitive H100 access; emerging provider</td></tr>
+          <tr data-type="neo"><td class="dim">12</td><td class="g">Lepton AI</td><td><span class="tag tag-neo">Neo-Cloud</span></td><td class="d">USA (CA)</td><td>H100, A100</td><td class="d">US, EU</td><td class="d">On-demand + serverless</td><td class="d">Serverless GPU; LLM inference specialists</td></tr>
+          <tr data-type="neo"><td class="dim">13</td><td class="g">SkyPilot (managed)</td><td><span class="tag tag-neo">Neo-Cloud</span></td><td class="d">USA</td><td>Multi-cloud abstraction</td><td class="d">Cross-cloud</td><td class="d">Spot optimizer</td><td class="d">Orchestration layer; spot GPU savings across clouds</td></tr>
+          <tr data-type="neo"><td class="dim">14</td><td class="g">TensorWave</td><td><span class="tag tag-neo">Neo-Cloud</span></td><td class="d">USA</td><td>AMD MI300X/MI325X/MI355X</td><td class="d">US</td><td class="d">Reserved + on-demand</td><td class="d">AMD specialist; largest MI300X cloud provider</td></tr>
+
+          <tr data-type="hyper"><td class="dim">15</td><td class="p">Amazon AWS</td><td><span class="tag tag-hyper">Hyperscaler</span></td><td class="d">USA (WA)</td><td>H100, H200, B200, GB200, Trainium2, Inferentia2</td><td class="d">33 regions globally</td><td class="d">On-demand + Capacity Blocks + Spot</td><td class="d">P6e-GB200, P6-B300; broadest global reach; Trainium UltraClusters</td></tr>
+          <tr data-type="hyper"><td class="dim">16</td><td class="p">Google Cloud</td><td><span class="tag tag-hyper">Hyperscaler</span></td><td class="d">USA (CA)</td><td>H100, H200, B200, TPU v4/v5e/v5p, L4</td><td class="d">40+ regions globally</td><td class="d">On-demand + Committed Use</td><td class="d">A3/A4 families; own TPU AI accelerators; strongest AI platform tooling</td></tr>
+          <tr data-type="hyper"><td class="dim">17</td><td class="p">Microsoft Azure</td><td><span class="tag tag-hyper">Hyperscaler</span></td><td class="d">USA (WA)</td><td>H100, H200, ND H100/H200 series</td><td class="d">60+ regions globally</td><td class="d">On-demand + Reserved + Spot</td><td class="d">OpenAI partnership; broadest enterprise compliance; 60+ cloud regions</td></tr>
+          <tr data-type="hyper"><td class="dim">18</td><td class="p">Oracle Cloud</td><td><span class="tag tag-hyper">Hyperscaler</span></td><td class="d">USA (TX)</td><td>H100, H200, B200, B300, GB300, MI300X</td><td class="d">44 regions; strong UAE/MEA</td><td class="d">On-demand + Reserved + Universal Credits</td><td class="d">Most transparent hyperscaler GPU pricing; bare-metal GPU VMs; UAE/MEA leader</td></tr>
+
+          <tr data-type="mkt"><td class="dim">19</td><td class="y">RunPod</td><td><span class="tag tag-mkt">Marketplace</span></td><td class="d">USA</td><td>H100, H200, A100, RTX 4090, NVL</td><td class="d">US, EU distributed</td><td class="d">On-demand + Spot + Savings Plans</td><td class="d">Most transparent lower-cost H100 self-serve</td></tr>
+          <tr data-type="mkt"><td class="dim">20</td><td class="y">Hyperstack</td><td><span class="tag tag-mkt">Marketplace</span></td><td class="d">UK</td><td>H200, H100 PCIe/NVLink/SXM, A100</td><td class="d">UK, NL, CA, US</td><td class="d">On-demand + Reserved + Spot</td><td class="d">Aggressive price floors; reserved discounts; spot –20%</td></tr>
+          <tr data-type="mkt"><td class="dim">21</td><td class="y">Vast.ai</td><td><span class="tag tag-mkt">Marketplace</span></td><td class="d">USA</td><td>H100, A100, RTX 4090, broad (60+ SKUs)</td><td class="d">40+ data centers globally</td><td class="d">Live marketplace / bid</td><td class="d">Widest SKU access; up to 20,000 GPUs; lowest price floors</td></tr>
+          <tr data-type="mkt"><td class="dim">22</td><td class="y">Shadeform</td><td><span class="tag tag-mkt">Marketplace</span></td><td class="d">USA</td><td>H100, A100, broad via 20+ providers</td><td class="d">Global via aggregation</td><td class="d">Unified API; spot-like</td><td class="d">Single API across 20+ cloud providers; abstraction layer</td></tr>
+          <tr data-type="mkt"><td class="dim">23</td><td class="y">TensorDock</td><td><span class="tag tag-mkt">Marketplace</span></td><td class="d">USA</td><td>H100, A100, RTX 4090, A40</td><td class="d">US, EU, APAC nodes</td><td class="d">On-demand low-cost</td><td class="d">Ultra-low price floors; broad RTX/prosumer access</td></tr>
+          <tr data-type="mkt"><td class="dim">24</td><td class="y">io.net</td><td><span class="tag tag-mkt">Marketplace</span></td><td class="d">USA</td><td>H100, A100, RTX, broad</td><td class="d">138 countries (decentralized)</td><td class="d">DePIN / Decentralized</td><td class="d">Largest decentralized GPU network; 138 countries</td></tr>
+          <tr data-type="mkt"><td class="dim">25</td><td class="y">Salad Cloud</td><td><span class="tag tag-mkt">Marketplace</span></td><td class="d">USA</td><td>RTX 4090, 3090, A100</td><td class="d">Global consumer hardware</td><td class="d">Spot / consumer idle</td><td class="d">Consumer GPU utilization; lowest-cost inference</td></tr>
+          <tr data-type="mkt"><td class="dim">26</td><td class="y">Jarvis Labs</td><td><span class="tag tag-mkt">Marketplace</span></td><td class="d">India</td><td>A100, H100, RTX 3090</td><td class="d">US, EU, IN</td><td class="d">On-demand</td><td class="d">ML-focused; Jupyter-native workflows; India base</td></tr>
+          <tr data-type="mkt"><td class="dim">27</td><td class="y">Paperspace (DigitalOcean)</td><td><span class="tag tag-mkt">Marketplace</span></td><td class="d">USA</td><td>A100, H100, RTX series</td><td class="d">US, EU</td><td class="d">On-demand + Notebooks</td><td class="d">ML notebooks; DigitalOcean integration</td></tr>
+          <tr data-type="mkt"><td class="dim">28</td><td class="y">DigitalOcean</td><td><span class="tag tag-mkt">Marketplace</span></td><td class="d">USA (NY)</td><td>H100, A100, L40S</td><td class="d">US, EU, APAC, SG</td><td class="d">On-demand</td><td class="d">SMB-friendly; simple UX; Paperspace parent</td></tr>
+          <tr data-type="mkt"><td class="dim">29</td><td class="y">Theta EdgeCloud</td><td><span class="tag tag-mkt">Marketplace</span></td><td class="d">USA</td><td>A100, H100, RTX 4090</td><td class="d">Distributed global</td><td class="d">Edge compute / DePIN</td><td class="d">Web3-native edge GPU network</td></tr>
+          <tr data-type="mkt"><td class="dim">30</td><td class="y">Scaleway</td><td><span class="tag tag-mkt">Marketplace</span></td><td class="d">France</td><td>H100, A100, L40S</td><td class="d">France, Netherlands, Poland</td><td class="d">On-demand</td><td class="d">EU-sovereign; GDPR-native; French cloud</td></tr>
+          <tr data-type="mkt"><td class="dim">31</td><td class="y">Seeweb</td><td><span class="tag tag-mkt">Marketplace</span></td><td class="d">Italy</td><td>A100, RTX 4090</td><td class="d">Italy</td><td class="d">On-demand</td><td class="d">Italian sovereign cloud GPU provider</td></tr>
+          <tr data-type="mkt"><td class="dim">32</td><td class="y">UpCloud</td><td><span class="tag tag-mkt">Marketplace</span></td><td class="d">Finland</td><td>A100, H100</td><td class="d">EU, US, SG</td><td class="d">On-demand</td><td class="d">Finnish cloud; GPU instances expanding</td></tr>
+          <tr data-type="mkt"><td class="dim">33</td><td class="y">Civo</td><td><span class="tag tag-mkt">Marketplace</span></td><td class="d">UK</td><td>A100, H100</td><td class="d">UK, US, PHX</td><td class="d">On-demand Kubernetes</td><td class="d">K8s-first GPU cloud; developer-friendly</td></tr>
+
+          <tr data-type="api"><td class="dim">34</td><td style="color:#f9a8d4">Anthropic</td><td><span class="tag tag-api">API / Inference</span></td><td class="d">USA (CA)</td><td class="d">Cloud-hosted</td><td class="d">Global API</td><td class="d">$/1M tokens</td><td class="d">Claude family; safety-focused frontier; Claude Opus 4.6 / Sonnet 4.6 / Haiku 4.5</td></tr>
+          <tr data-type="api"><td class="dim">35</td><td style="color:#f9a8d4">OpenAI</td><td><span class="tag tag-api">API / Inference</span></td><td class="d">USA (CA)</td><td class="d">Cloud-hosted</td><td class="d">Global API</td><td class="d">$/1M tokens + modality</td><td class="d">GPT-5.x family; DALL·E; Realtime; dominant ecosystem</td></tr>
+          <tr data-type="api"><td class="dim">36</td><td style="color:#f9a8d4">Google Cloud (AI/Vertex)</td><td><span class="tag tag-api">API / Inference</span></td><td class="d">USA (CA)</td><td class="d">Cloud-hosted + TPU</td><td class="d">Global via Vertex AI</td><td class="d">$/1M tokens</td><td class="d">Gemini 2.x/3.x; grounding; multimodal leader</td></tr>
+          <tr data-type="api"><td class="dim">37</td><td style="color:#f9a8d4">Cohere</td><td><span class="tag tag-api">API / Inference</span></td><td class="d">Canada (Toronto)</td><td class="d">Cloud-hosted</td><td class="d">Global API</td><td class="d">$/1M tokens</td><td class="d">Command family; enterprise RAG specialist</td></tr>
+          <tr data-type="api"><td class="dim">38</td><td style="color:#f9a8d4">Mistral AI</td><td><span class="tag tag-api">API / Inference</span></td><td class="d">France (Paris)</td><td class="d">Cloud-hosted</td><td class="d">Global API</td><td class="d">$/1M tokens</td><td class="d">Open + closed models; EU-sovereign; strong code</td></tr>
+          <tr data-type="api"><td class="dim">39</td><td style="color:#f9a8d4">Groq</td><td><span class="tag tag-api">API / Inference</span></td><td class="d">USA (CA)</td><td class="d">LPU chips</td><td class="d">Global API</td><td class="d">$/1M tokens (ultra-low)</td><td class="d">Fastest inference (LPU); lowest token cost; 750+ tok/s</td></tr>
+          <tr data-type="api"><td class="dim">40</td><td style="color:#f9a8d4">Fireworks AI</td><td><span class="tag tag-api">API / Inference</span></td><td class="d">USA (CA)</td><td class="d">Cloud-hosted</td><td class="d">Global API</td><td class="d">$/1M tokens by model size</td><td class="d">Open-model supermarket; transparent tiered pricing</td></tr>
+          <tr data-type="api"><td class="dim">41</td><td style="color:#f9a8d4">Perplexity</td><td><span class="tag tag-api">API / Inference</span></td><td class="d">USA (CA)</td><td class="d">Cloud-hosted</td><td class="d">Global API</td><td class="d">$/1M + $/search</td><td class="d">Search-grounded Sonar family; Sonar Deep Research agent</td></tr>
+          <tr data-type="api"><td class="dim">42</td><td style="color:#f9a8d4">Together AI</td><td><span class="tag tag-api">API / Inference</span></td><td class="d">USA (CA)</td><td>H100, H200, B200</td><td class="d">US + API global</td><td class="d">$/1M tokens + $/GPU-hr</td><td class="d">Hybrid: open-model API + dedicated GPU clusters</td></tr>
+          <tr data-type="api"><td class="dim">43</td><td style="color:#f9a8d4">Deep Infra</td><td><span class="tag tag-api">API / Inference</span></td><td class="d">USA</td><td class="d">Cloud-hosted</td><td class="d">Global API</td><td class="d">$/1M tokens</td><td class="d">Low-cost open-model inference; broad catalog</td></tr>
+          <tr data-type="api"><td class="dim">44</td><td style="color:#f9a8d4">Replicate</td><td><span class="tag tag-api">API / Inference</span></td><td class="d">USA (CA)</td><td class="d">Cloud-hosted</td><td class="d">Global API</td><td class="d">$/prediction / $/1M</td><td class="d">Largest open-source model marketplace; community models</td></tr>
+          <tr data-type="api"><td class="dim">45</td><td style="color:#f9a8d4">Hyperbolic</td><td><span class="tag tag-api">API / Inference</span></td><td class="d">USA</td><td class="d">Cloud-hosted</td><td class="d">Global API</td><td class="d">$/1M tokens</td><td class="d">Open-model inference; competitive pricing</td></tr>
+          <tr data-type="api"><td class="dim">46</td><td style="color:#f9a8d4">IBM Cloud / Watsonx</td><td><span class="tag tag-api">API / Inference</span></td><td class="d">USA (NY)</td><td>A100, H100, Gaudi 2/3</td><td class="d">US, EU, APAC</td><td class="d">On-demand + Watsonx</td><td class="d">Watsonx enterprise AI; Intel Gaudi specialist</td></tr>
+          <tr data-type="api"><td class="dim">47</td><td style="color:#f9a8d4">Beam</td><td><span class="tag tag-api">API / Inference</span></td><td class="d">USA</td><td>A100, H100</td><td class="d">US</td><td class="d">$/compute-unit</td><td class="d">Serverless GPU inference; Python-native</td></tr>
+          <tr data-type="api"><td class="dim">48</td><td style="color:#f9a8d4">SambaNova Cloud</td><td><span class="tag tag-api">API / Inference</span></td><td class="d">USA (CA)</td><td class="d">SN40L RDU chips</td><td class="d">Global API</td><td class="d">$/1M tokens</td><td class="d">RDU architecture; Llama 405B native; enterprise/govt focus</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- 06. AI MODELS & API                            -->
+<!-- ═══════════════════════════════════════════════ -->
+<section class="section" id="models">
+  <div class="section-header anim-in">
+    <div class="section-title">AI Models &amp; API Pricing</div>
+    <div class="section-sub">Closed + open-weight + inference API pricing — March 2026</div>
+  </div>
+
+  <!-- API price comparison chart -->
+  <div class="chart-panel anim-in">
+    <div class="panel-header">
+      <span class="panel-title">Model API Output Price Comparison — $/1M Tokens</span>
+      <span class="panel-sub">Output pricing (typically 3–5× input price) — March 2026</span>
+    </div>
+    <div class="chart-body">
+      <canvas id="chartApiPrices" style="max-height:300px"></canvas>
+    </div>
+  </div>
+
+  <!-- Frontier closed models -->
+  <div class="sub-hd anim-in">Frontier Closed Models — Anthropic, OpenAI, Google, Cohere, Mistral</div>
+  <div class="panel anim-in">
+    <div class="tbl-wrap">
+      <table class="dt">
+        <thead><tr><th>Model</th><th>Provider</th><th>Type</th><th>Input $/1M</th><th>Output $/1M</th><th>Context</th><th>Multimodal</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr class="hl"><td class="g">Claude Opus 4.6</td><td class="d">Anthropic</td><td><span class="tag tag-closed">Closed</span></td><td class="y">$5.00</td><td class="r">$25.00</td><td class="d">200K</td><td class="gr">Yes</td><td class="d">Frontier reasoning; highest capability</td></tr>
+          <tr><td class="g">Claude Sonnet 4.6</td><td class="d">Anthropic</td><td><span class="tag tag-closed">Closed</span></td><td class="y">$3.00</td><td class="y">$15.00</td><td class="d">200K</td><td class="gr">Yes</td><td class="d">Best Anthropic price/performance; code + analysis</td></tr>
+          <tr><td class="g">Claude Haiku 4.5</td><td class="d">Anthropic</td><td><span class="tag tag-closed">Closed</span></td><td class="gr">$1.00</td><td class="gr">$5.00</td><td class="d">200K</td><td class="gr">Yes</td><td class="d">Fast; cost-efficient; Q&amp;A / summarization</td></tr>
+          <tr class="hl"><td class="g">GPT-5 (est.)</td><td class="d">OpenAI</td><td><span class="tag tag-closed">Closed</span></td><td class="r">~$10.00</td><td class="r">~$30.00</td><td class="d">128K+</td><td class="gr">Yes</td><td class="d">Frontier; dominant ecosystem</td></tr>
+          <tr><td class="g">GPT-4o</td><td class="d">OpenAI</td><td><span class="tag tag-closed">Closed</span></td><td class="y">$2.50</td><td class="y">$10.00</td><td class="d">128K</td><td class="gr">Yes</td><td class="d">Fast multimodal; DALL·E; Realtime support</td></tr>
+          <tr><td class="g">GPT-4o mini</td><td class="d">OpenAI</td><td><span class="tag tag-closed">Closed</span></td><td class="gr">$0.15</td><td class="gr">$0.60</td><td class="d">128K</td><td class="gr">Yes</td><td class="d">Budget; strong for simple tasks</td></tr>
+          <tr><td class="g">o3 (reasoning)</td><td class="d">OpenAI</td><td><span class="tag tag-closed">Closed</span></td><td class="r">$10.00</td><td class="r">$40.00</td><td class="d">200K</td><td class="gr">Yes</td><td class="d">Frontier reasoning; ARC-AGI SOTA</td></tr>
+          <tr><td class="g">o4-mini</td><td class="d">OpenAI</td><td><span class="tag tag-closed">Closed</span></td><td class="y">$1.10</td><td class="y">$4.40</td><td class="d">128K</td><td class="gr">Yes</td><td class="d">Cost-efficient reasoning</td></tr>
+          <tr class="hl"><td class="g">Gemini 2.5 Pro</td><td class="d">Google</td><td><span class="tag tag-closed">Closed</span></td><td class="y">$1.25–$2.50</td><td class="y">$10.00–$15.00</td><td class="d">1M+</td><td class="gr">Yes</td><td class="d">Largest context window; grounding; code</td></tr>
+          <tr><td class="g">Gemini 2.5 Flash</td><td class="d">Google</td><td><span class="tag tag-closed">Closed</span></td><td class="gr">$0.15</td><td class="gr">$0.60</td><td class="d">1M</td><td class="gr">Yes</td><td class="d">Fast; cost-efficient; large context</td></tr>
+          <tr><td class="g">Command R+</td><td class="d">Cohere</td><td><span class="tag tag-closed">Closed</span></td><td class="y">$2.50</td><td class="y">$10.00</td><td class="d">128K</td><td class="dim">No</td><td class="d">Enterprise RAG specialist</td></tr>
+          <tr><td class="g">Command R</td><td class="d">Cohere</td><td><span class="tag tag-closed">Closed</span></td><td class="gr">$0.50</td><td class="gr">$1.50</td><td class="d">128K</td><td class="dim">No</td><td class="d">Cost-efficient RAG</td></tr>
+          <tr><td class="g">Mistral Large 2</td><td class="d">Mistral AI</td><td><span class="tag tag-closed">Closed</span></td><td class="y">$2.00</td><td class="y">$6.00</td><td class="d">128K</td><td class="dim">No</td><td class="d">EU-sovereign; strong code; function calling</td></tr>
+          <tr><td class="g">Codestral 2501</td><td class="d">Mistral AI</td><td><span class="tag tag-closed">Closed</span></td><td class="y">$0.30</td><td class="y">$0.90</td><td class="d">256K</td><td class="dim">No</td><td class="d">Code specialist; fastest in class</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Groq open models -->
+  <div class="sub-hd anim-in">Groq LPU — Fastest Open-Model Inference</div>
+  <div class="panel anim-in">
+    <div class="tbl-wrap">
+      <table class="dt">
+        <thead><tr><th>Model</th><th>Input $/1M</th><th>Output $/1M</th><th>Speed (tok/s)</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr class="hl"><td class="g">Llama 3.1 8B</td><td class="gr">$0.05</td><td class="gr">$0.08</td><td class="g">~750</td><td class="d">Fastest &amp; cheapest; optimal for high-volume Q&amp;A</td></tr>
+          <tr><td class="g">Llama 3.1 70B</td><td class="gr">$0.59</td><td class="gr">$0.79</td><td class="g">~250</td><td class="d">Strong mid-tier open model</td></tr>
+          <tr><td class="g">Llama 3.1 405B</td><td class="y">$2.00</td><td class="y">$2.00</td><td class="g">~100</td><td class="d">Largest open Llama</td></tr>
+          <tr><td class="g">Llama 3.3 70B</td><td class="gr">$0.59</td><td class="gr">$0.79</td><td class="g">~250</td><td class="d">Improved Llama 3 series</td></tr>
+          <tr><td class="g">GPT-OSS 120B</td><td class="gr">$0.15</td><td class="gr">$0.60</td><td class="g">~180</td><td class="d">OpenAI open-weight on Groq</td></tr>
+          <tr><td class="g">GPT-OSS 20B</td><td class="gr">$0.075</td><td class="gr">$0.30</td><td class="g">~380</td><td class="d">Small OpenAI open-weight</td></tr>
+          <tr class="hl"><td class="g">DeepSeek R1</td><td class="gr">$0.75</td><td class="gr">$0.99</td><td class="g">~150</td><td class="d">Reasoning; distilled on Groq LPU</td></tr>
+          <tr><td class="g">Qwen 2.5 72B</td><td class="gr">$0.59</td><td class="gr">$0.79</td><td class="g">~200</td><td class="d">Strong multilingual / coding</td></tr>
+          <tr><td class="g">Mixtral 8×7B</td><td class="gr">$0.24</td><td class="gr">$0.24</td><td class="g">~450</td><td class="d">Fast MoE on Groq LPU</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Fireworks -->
+  <div class="sub-hd anim-in">Fireworks AI — Open Model Supermarket (Tiered Pricing)</div>
+  <div class="panel anim-in">
+    <div class="tbl-wrap">
+      <table class="dt">
+        <thead><tr><th>Model / Tier</th><th>Input $/1M</th><th>Output $/1M</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td class="d">Generic &lt;4B tier</td><td class="gr">$0.10</td><td class="gr">$0.10</td><td class="d">Any sub-4B model on platform</td></tr>
+          <tr><td class="d">Generic 4B–16B tier</td><td class="gr">$0.20</td><td class="gr">$0.20</td><td class="d">Mid-size models</td></tr>
+          <tr><td class="d">Generic &gt;16B tier</td><td class="gr">$0.90</td><td class="gr">$0.90</td><td class="d">Large dense models</td></tr>
+          <tr><td class="d">MoE small tier</td><td class="gr">$0.50</td><td class="gr">$0.50</td><td class="d">Smaller MoE models</td></tr>
+          <tr><td class="d">MoE large tier</td><td class="y">$1.20</td><td class="y">$1.20</td><td class="d">Large MoE (Mixtral-class)</td></tr>
+          <tr class="hl"><td class="g">DeepSeek V3</td><td class="gr">$0.56</td><td class="gr">$1.68</td><td class="d">Strong open model; price-competitive</td></tr>
+          <tr><td class="g">DeepSeek R1</td><td class="y">$3.00</td><td class="y">$7.00</td><td class="d">Full R1 reasoning model</td></tr>
+          <tr><td class="g">Llama 4 Maverick</td><td class="gr">$0.22</td><td class="gr">$0.88</td><td class="d">Meta Llama 4 MoE variant</td></tr>
+          <tr><td class="g">Qwen3 VL 30B A3B</td><td class="gr">$0.15</td><td class="gr">$0.60</td><td class="d">Multimodal Qwen3</td></tr>
+          <tr><td class="g">GPT-OSS 120B</td><td class="gr">$0.15</td><td class="gr">$0.60</td><td class="d">OpenAI open-weight on Fireworks</td></tr>
+          <tr><td class="g">Kimi K2.5</td><td class="gr">$0.60</td><td class="gr">$3.00</td><td class="d">Moonshot AI reasoning model</td></tr>
+          <tr><td class="g">GLM-5</td><td class="y">$1.00</td><td class="y">$3.20</td><td class="d">Zhipu AI model</td></tr>
+          <tr><td class="g">Qwen 2.5 Coder 32B</td><td class="gr">$0.90</td><td class="gr">$0.90</td><td class="d">&gt;16B tier; coding specialist</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Together AI -->
+  <div class="sub-hd anim-in">Together AI — Open Model API Inference</div>
+  <div class="panel anim-in">
+    <div class="tbl-wrap">
+      <table class="dt">
+        <thead><tr><th>Model</th><th>Input $/1M</th><th>Output $/1M</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr class="hl"><td class="g">Llama 4 Maverick</td><td class="gr">$0.27</td><td class="gr">$0.85</td><td class="d">Latest Meta Llama 4 MoE</td></tr>
+          <tr><td class="g">DeepSeek-R1-0528</td><td class="y">$3.00</td><td class="y">$7.00</td><td class="d">Latest DeepSeek reasoning</td></tr>
+          <tr><td class="g">DeepSeek-V3.1</td><td class="gr">$0.60</td><td class="gr">$1.70</td><td class="d">Strong general open model</td></tr>
+          <tr><td class="g">GPT-OSS 120B</td><td class="gr">$0.15</td><td class="gr">$0.60</td><td class="d">OpenAI open-weight</td></tr>
+          <tr><td class="g">Llama 3.3 70B</td><td class="gr">$0.88</td><td class="gr">$0.88</td><td class="d">Optimized Llama 70B</td></tr>
+          <tr><td class="g">Llama 3.1 405B</td><td class="y">$3.50</td><td class="y">$3.50</td><td class="d">Largest open Llama</td></tr>
+          <tr><td class="g">Qwen 2.5 72B</td><td class="gr">$1.20</td><td class="gr">$1.20</td><td class="d">Multilingual model</td></tr>
+          <tr><td class="g">Mixtral 8×7B</td><td class="gr">$0.54</td><td class="gr">$0.54</td><td class="d">MoE; fast inference</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Perplexity -->
+  <div class="sub-hd anim-in">Perplexity — Search-Grounded Sonar Family</div>
+  <div class="panel anim-in">
+    <div class="tbl-wrap">
+      <table class="dt">
+        <thead><tr><th>Model</th><th>Input $/1M</th><th>Output $/1M</th><th>Citations $/1M</th><th>Search $/1K req</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr class="hl"><td class="g">Sonar Deep Research</td><td class="y">$2.00</td><td class="y">$8.00</td><td class="y">$2.00</td><td class="y">$5.00</td><td class="d">Full research agent; multi-step search</td></tr>
+          <tr><td class="g">Sonar Pro</td><td class="y">$1.00</td><td class="y">$5.00</td><td class="y">$2.00</td><td class="y">$5.00</td><td class="d">Grounded web search + reasoning</td></tr>
+          <tr><td class="g">Sonar</td><td class="gr">$0.20</td><td class="gr">$0.80</td><td class="y">$2.00</td><td class="y">$5.00</td><td class="d">Base grounded model</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Cost comparison -->
+  <div class="sub-hd anim-in">Same-Task Economics — Closed vs Open Model Cost Comparison</div>
+  <div class="panel anim-in">
+    <div class="tbl-wrap">
+      <table class="dt">
+        <thead><tr><th>Use Case</th><th>Best Closed Model</th><th>Cost (in/out per 1M)</th><th>Best Open Platform</th><th>Cost (in/out per 1M)</th><th>Savings</th></tr></thead>
+        <tbody>
+          <tr><td class="y">Simple Q&amp;A / Summarization</td><td class="d">Claude Haiku 4.5</td><td class="y">$1.00 / $5.00</td><td class="d">Llama 3.1 8B (Groq)</td><td class="gr">$0.05 / $0.08</td><td class="gr">95%+</td></tr>
+          <tr><td class="y">Code Generation</td><td class="d">Claude Sonnet 4.6</td><td class="y">$3.00 / $15.00</td><td class="d">Qwen2.5 Coder 32B (Fireworks)</td><td class="gr">$0.90 / $0.90</td><td class="gr">70–90%</td></tr>
+          <tr><td class="y">Complex Reasoning</td><td class="d">Claude Opus 4.6</td><td class="r">$5.00 / $25.00</td><td class="d">DeepSeek R1 (Groq)</td><td class="gr">$0.75 / $0.99</td><td class="gr">85%+</td></tr>
+          <tr><td class="y">Enterprise RAG</td><td class="d">Command R+ (Cohere)</td><td class="y">$2.50 / $10.00</td><td class="d">Command R (Cohere)</td><td class="gr">$0.50 / $1.50</td><td class="gr">80%</td></tr>
+          <tr><td class="y">Real-time Voice</td><td class="d">GPT Realtime mini</td><td class="y">$0.60/1M audio</td><td class="d">Groq text + TTS</td><td class="gr">$0.05 + TTS cost</td><td class="gr">50–70%</td></tr>
+          <tr><td class="y">Search-Grounded Research</td><td class="d">Perplexity Sonar Deep Research</td><td class="y">$2/$8 + $5/1K searches</td><td class="d">Claude + Web Search tool</td><td class="y">$3/$15 + API costs</td><td class="dim">Comparable</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- 07. GEOGRAPHIC COVERAGE                        -->
+<!-- ═══════════════════════════════════════════════ -->
+<section class="section" id="geo">
+  <div class="section-header anim-in">
+    <div class="section-title">Geographic Coverage</div>
+    <div class="section-sub">Data center presence by region — provider mapping — March 2026</div>
+  </div>
+
+  <!-- Leaflet World Map -->
+  <div class="world-map-container anim-in">
+    <div class="map-header">
+      <span class="panel-title">Global AI Cloud Data Center Presence Map</span>
+      <span class="panel-sub">Hover nodes for provider details &nbsp;·&nbsp; March 2026</span>
+    </div>
+    <div style="position:relative; border-radius:0 0 10px 10px; overflow:hidden;">
+      <div id="worldMap" style="height:520px; width:100%; background:#060d1a;"></div>
+      <div style="position:absolute;bottom:16px;left:16px;z-index:1000;background:rgba(4,6,13,0.88);border:1px solid #1e3050;border-radius:8px;padding:12px 16px;font-family:'DM Mono',monospace;font-size:11px;line-height:2;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
+          <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#6366f1;box-shadow:0 0 8px #6366f1;flex-shrink:0;"></span>
+          <span style="color:#a5b4fc;">Hyperscaler (AWS / GCP / Azure / Oracle)</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
+          <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#00f5c4;box-shadow:0 0 8px #00f5c4;flex-shrink:0;"></span>
+          <span style="color:#67e8f9;">Neo-Cloud Specialist</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
+          <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#f97316;box-shadow:0 0 8px #f97316;flex-shrink:0;"></span>
+          <span style="color:#fdba74;">Marketplace / Federated (RunPod, Vast.ai, io.net)</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#facc15;box-shadow:0 0 8px #facc15;flex-shrink:0;"></span>
+          <span style="color:#fef08a;">UAE / MEA Sovereign</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  </div>
+
+  <div class="geo-grid anim-in">
+    <div class="geo-card">
+      <div class="geo-region"><div class="geo-dot"></div>North America</div>
+      <div class="geo-tags">
+        <span class="geo-tag">CoreWeave</span><span class="geo-tag">Lambda</span><span class="geo-tag">Nebius</span><span class="geo-tag">Crusoe</span><span class="geo-tag">Together AI</span><span class="geo-tag">AWS</span><span class="geo-tag">GCP</span><span class="geo-tag">Azure</span><span class="geo-tag">Oracle</span><span class="geo-tag">RunPod</span><span class="geo-tag">Vast.ai</span><span class="geo-tag">TensorDock</span>
+      </div>
+      <div class="geo-locs">US East: NY, VA, GA, TX | US West: CA, OR, WA<br>US Central: CO (Crusoe) | US Midwest<br>DCs: 20+ data center clusters | 80%+ of global GPU supply</div>
+    </div>
+    <div class="geo-card">
+      <div class="geo-region"><div class="geo-dot" style="background:#a5b4fc;box-shadow:0 0 8px #6366f1"></div>Europe</div>
+      <div class="geo-tags">
+        <span class="geo-tag">Nebius (FI/FR/IS/DE)</span><span class="geo-tag">Scaleway (FR/NL/PL)</span><span class="geo-tag">Genesis (IS/DE)</span><span class="geo-tag">Fluidstack</span><span class="geo-tag">Hyperstack (UK/NL)</span><span class="geo-tag">UpCloud (FI)</span><span class="geo-tag">Seeweb (IT)</span>
+      </div>
+      <div class="geo-locs">Finland (Nebius, UpCloud) | Iceland (Genesis 100% renewable)<br>France (Scaleway, Nebius FR) | Netherlands (Nebius, Hyperstack)<br>Germany (Nebius, Genesis) | UK (Hyperstack, Fluidstack) | Italy (Seeweb)<br>Poland (Scaleway) | EU sovereignty: GDPR-native options</div>
+    </div>
+    <div class="geo-card">
+      <div class="geo-region"><div class="geo-dot" style="background:#facc15;box-shadow:0 0 8px #facc15"></div>UAE / MEA</div>
+      <div class="geo-tags">
+        <span class="geo-tag">Oracle (UAE North)</span><span class="geo-tag">AWS (me-central-1)</span><span class="geo-tag">Azure (UAE North)</span><span class="geo-tag">G42 / Cerebras</span>
+      </div>
+      <div class="geo-locs">Dubai (AWS me-central-1, Azure UAE North, Oracle UAE)<br>Abu Dhabi (Oracle, G42 partnership with Cerebras WSE)<br>Saudi Arabia (LEAP region — AWS, Azure, Oracle expanding)<br>Best hyperscaler MEA presence: Oracle Cloud (Universal Credits)</div>
+    </div>
+    <div class="geo-card">
+      <div class="geo-region"><div class="geo-dot" style="background:#f97316;box-shadow:0 0 8px #f97316"></div>South &amp; Southeast Asia</div>
+      <div class="geo-tags">
+        <span class="geo-tag">AWS (Mumbai/Singapore)</span><span class="geo-tag">GCP (Singapore/Mumbai)</span><span class="geo-tag">Azure (India/SG)</span><span class="geo-tag">Oracle (Mumbai)</span><span class="geo-tag">Jarvis Labs (IN)</span>
+      </div>
+      <div class="geo-locs">India: Mumbai, Pune, Chennai, Hyderabad (all hyperscalers)<br>Singapore: APAC hub for AWS, GCP, Azure<br>Indonesia, Malaysia: GCP, AWS expanding<br>Jarvis Labs: India-based ML cloud (A100/H100)</div>
+    </div>
+    <div class="geo-card">
+      <div class="geo-region"><div class="geo-dot" style="background:#38bdf8;box-shadow:0 0 8px #38bdf8"></div>East Asia (Japan, Korea, China)</div>
+      <div class="geo-tags">
+        <span class="geo-tag">AWS (Tokyo/Osaka)</span><span class="geo-tag">GCP (Tokyo)</span><span class="geo-tag">Azure (Japan)</span><span class="geo-tag">Biren (CN domestic)</span><span class="geo-tag">FuriosaAI (KR)</span>
+      </div>
+      <div class="geo-locs">Japan: Tokyo, Osaka (AWS, GCP, Azure, SoftBank Cloud)<br>South Korea: Seoul (AWS, GCP, Azure + domestic: FuriosaAI)<br>China: Domestic-only GPU clouds (Biren BR100, Cambricon, Huawei Ascend)<br>GPU export controls limit NVIDIA Hopper/Blackwell in CN</div>
+    </div>
+    <div class="geo-card">
+      <div class="geo-region"><div class="geo-dot" style="background:#4ade80;box-shadow:0 0 8px #4ade80"></div>Rest of World</div>
+      <div class="geo-tags">
+        <span class="geo-tag">AWS (São Paulo)</span><span class="geo-tag">GCP (Brazil/AU)</span><span class="geo-tag">Latitude.sh (LatAm)</span><span class="geo-tag">io.net (138 countries)</span>
+      </div>
+      <div class="geo-locs">Australia: Sydney (AWS, GCP, Azure, Oracle)<br>Latin America: São Paulo (AWS, GCP, Azure + Latitude.sh specialist)<br>Africa: Cape Town, Nigeria (limited — AWS, Azure)<br>Decentralized: io.net spans 138 countries via DePIN model</div>
+    </div>
+  </div>
+
+  <!-- Geographic coverage table -->
+  <div class="sub-hd anim-in">Provider Geographic Coverage Matrix</div>
+  <div class="panel anim-in">
+    <div class="tbl-wrap">
+      <table class="dt">
+        <thead><tr><th>Provider</th><th>N. America</th><th>Europe</th><th>APAC</th><th>UAE/MEA</th><th>LatAm</th><th>Decentralized</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td class="g">CoreWeave</td><td class="gr">●●●</td><td class="gr">●●</td><td class="dim">—</td><td class="dim">—</td><td class="dim">—</td><td class="dim">—</td><td class="d">US specialist; expanding EU</td></tr>
+          <tr><td class="g">Nebius</td><td class="y">●</td><td class="gr">●●●</td><td class="dim">—</td><td class="dim">—</td><td class="dim">—</td><td class="dim">—</td><td class="d">EU-first; FI, FR, IS, DE</td></tr>
+          <tr><td class="g">Oracle Cloud</td><td class="gr">●●●</td><td class="gr">●●●</td><td class="gr">●●●</td><td class="gr">●●●</td><td class="y">●●</td><td class="dim">—</td><td class="d">Best hyperscaler MEA presence</td></tr>
+          <tr><td class="g">AWS</td><td class="gr">●●●</td><td class="gr">●●●</td><td class="gr">●●●</td><td class="gr">●●●</td><td class="y">●●</td><td class="dim">—</td><td class="d">Broadest global reach; 33 regions</td></tr>
+          <tr><td class="g">Azure</td><td class="gr">●●●</td><td class="gr">●●●</td><td class="gr">●●●</td><td class="gr">●●●</td><td class="y">●●</td><td class="dim">—</td><td class="d">60+ regions globally</td></tr>
+          <tr><td class="g">io.net</td><td class="gr">●●</td><td class="gr">●●</td><td class="y">●</td><td class="y">●</td><td class="y">●</td><td class="gr">●●●</td><td class="d">138 countries decentralized</td></tr>
+          <tr><td class="g">Vast.ai</td><td class="gr">●●</td><td class="gr">●●</td><td class="y">●</td><td class="y">●</td><td class="y">●</td><td class="gr">●●●</td><td class="d">40+ DCs globally</td></tr>
+          <tr><td class="g">Scaleway</td><td class="dim">—</td><td class="gr">●●●</td><td class="dim">—</td><td class="dim">—</td><td class="dim">—</td><td class="dim">—</td><td class="d">French sovereign cloud</td></tr>
+          <tr><td class="g">Genesis Cloud</td><td class="dim">—</td><td class="gr">●●●</td><td class="dim">—</td><td class="dim">—</td><td class="dim">—</td><td class="dim">—</td><td class="d">100% renewable Iceland/DE</td></tr>
+          <tr><td class="g">Latitude.sh</td><td class="y">●</td><td class="dim">—</td><td class="dim">—</td><td class="dim">—</td><td class="gr">●●●</td><td class="dim">—</td><td class="d">LatAm specialist</td></tr>
+          <tr><td class="g">Jarvis Labs</td><td class="y">●</td><td class="y">●</td><td class="gr">●●</td><td class="dim">—</td><td class="dim">—</td><td class="dim">—</td><td class="d">India-based ML cloud</td></tr>
+          <tr><td class="g">Hyperstack</td><td class="y">●</td><td class="gr">●●</td><td class="dim">—</td><td class="dim">—</td><td class="dim">—</td><td class="dim">—</td><td class="d">UK, NL, CA</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="legend">
+      <div class="leg-item"><div class="leg-dot" style="background:#4ade80"></div> ●●● Primary / major presence</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#facc15"></div> ●● Secondary presence</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#64748b"></div> ● Limited / emerging</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#1e2438"></div> — Not present</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- 08. BUYER STRATEGY                             -->
+<!-- ═══════════════════════════════════════════════ -->
+<section class="section" id="strategy">
+  <div class="section-header anim-in">
+    <div class="section-title">Buyer Strategy Guide</div>
+    <div class="section-sub">Matching workload type to optimal provider — March 2026</div>
+  </div>
+
+  <div class="two-col anim-in">
+    <div class="panel">
+      <div class="panel-header"><span class="panel-title">By Workload Type</span></div>
+      <div class="tbl-wrap">
+        <table class="dt">
+          <thead><tr><th>Workload</th><th>Top Picks</th><th>Key Criteria</th></tr></thead>
+          <tbody>
+            <tr><td class="y">Large Model Training (100B+)</td><td class="d">CoreWeave, Nebius, Lambda, Crusoe, Oracle</td><td class="d">Cluster topology, NVLink fabric, Blackwell roadmap</td></tr>
+            <tr><td class="y">Fine-tuning / Mid-scale Training</td><td class="d">RunPod, Hyperstack, Nebius, Lambda</td><td class="d">H100/A100 on-demand; self-serve flexibility</td></tr>
+            <tr><td class="y">Enterprise Inference (own model)</td><td class="d">CoreWeave, Together AI, Fluidstack, Oracle</td><td class="d">Dedicated GPU allocation; SLA; security</td></tr>
+            <tr><td class="y">API Inference (closed models)</td><td class="d">OpenAI, Anthropic, Google, Cohere, Mistral</td><td class="d">Model quality; support; enterprise controls</td></tr>
+            <tr><td class="y">Open-Model API (low cost)</td><td class="d">Groq, Fireworks, Together AI, DeepInfra</td><td class="d">Token price; latency; model breadth</td></tr>
+            <tr><td class="y">Experimentation / Prototyping</td><td class="d">RunPod, Vast.ai, Hyperstack, TensorDock</td><td class="d">Lowest entry price; self-serve A100/H100</td></tr>
+            <tr><td class="y">Search-Grounded AI Agent</td><td class="d">Perplexity, Claude+tools, Gemini+grounding</td><td class="d">Citation quality; retrieval depth; search cost</td></tr>
+            <tr><td class="y">Real-time Voice / Audio</td><td class="d">OpenAI Realtime, Groq (ultra-low latency)</td><td class="d">Token-to-speech latency; audio pricing</td></tr>
+            <tr><td class="y">EU Sovereign / GDPR</td><td class="d">Scaleway, Genesis Cloud, Nebius (FI/FR/IS)</td><td class="d">EU data residency; GDPR compliance</td></tr>
+            <tr><td class="y">UAE / MEA Sovereign</td><td class="d">Oracle Cloud UAE, AWS me-central-1, Azure UAE North</td><td class="d">Local data residency; Arabic language models</td></tr>
+            <tr><td class="y">AMD Accelerator Workloads</td><td class="d">TensorWave, Oracle, Vast.ai</td><td class="d">MI300X/MI355X; ROCm SDK; large VRAM pool</td></tr>
+            <tr><td class="y">Ultra-Low Latency Inference</td><td class="d">Groq LPU API</td><td class="d">Deterministic latency; 750+ tok/s; LPU architecture</td></tr>
+            <tr><td class="y">Intel Gaudi Workloads</td><td class="d">IBM Cloud Watsonx, Intel Developer Cloud, AWS</td><td class="d">~30% cheaper than H100; transformer workloads</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><span class="panel-title">By Budget Priority</span></div>
+      <div class="tbl-wrap">
+        <table class="dt">
+          <thead><tr><th>Budget Level</th><th>Infrastructure</th><th>API / Inference</th></tr></thead>
+          <tbody>
+            <tr><td class="r">Enterprise (&gt;$50k/mo)</td><td class="d">CoreWeave, Nebius, Lambda, Crusoe — reserve Blackwell/Hopper clusters</td><td class="d">OpenAI/Anthropic enterprise tier; volume discounts</td></tr>
+            <tr><td class="y">Mid-Market ($5k–$50k/mo)</td><td class="d">RunPod, Hyperstack, Together AI — commit plans; H100/H200</td><td class="d">Claude Sonnet 4.6, GPT-4o, Gemini Flash — production</td></tr>
+            <tr><td class="gr">Startup / Dev ($100–$5k/mo)</td><td class="d">RunPod, Vast.ai, TensorDock — spot/on-demand A100/H100 PCIe</td><td class="d">Groq (Llama), Fireworks (open models), Haiku / GPT-4o mini</td></tr>
+            <tr><td class="dim">Hobbyist / POC (&lt;$100/mo)</td><td class="d">Vast.ai, Salad Cloud, TensorDock — RTX 4090 spot</td><td class="d">Groq Llama 3.1 8B ($0.05/1M), GPT-4o mini ($0.15/1M)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Decision chart -->
+  <div class="chart-panel anim-in">
+    <div class="panel-header">
+      <span class="panel-title">Price vs Performance Positioning — Provider Quadrant</span>
+      <span class="panel-sub">Relative positioning: Y=capability/SLA, X=cost-per-GPU</span>
+    </div>
+    <div class="chart-body">
+      <canvas id="chartQuadrant" style="max-height:340px"></canvas>
+    </div>
+  </div>
+
+</section>
+
+</main>
+
+<script>
+// ── TAB NAVIGATION ──
+let activeType = 'all';
+
+function showSection(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.ntab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'geo') { setTimeout(function(){ if(typeof initLeafletMapGlobal==='function') initLeafletMapGlobal(); }, 80); }
+}
+
+// ── PROVIDER FILTER ──
+function filterByType(type, btn) {
+  activeType = type;
+  document.querySelectorAll('.fbtn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilter();
+}
+function filterProvs() { applyFilter(); }
+function applyFilter() {
+  const q = document.getElementById('provSearch').value.toLowerCase();
+  const rows = document.querySelectorAll('#provTable tr');
+  let count = 0;
+  rows.forEach(row => {
+    const matchType = activeType === 'all' || row.dataset.type === activeType;
+    const matchText = q === '' || row.textContent.toLowerCase().includes(q);
+    row.style.display = matchType && matchText ? '' : 'none';
+    if (matchType && matchText) count++;
+  });
+  document.getElementById('provCount').textContent = count + ' providers';
+}
+
+// ── CHART DEFAULTS ──
+const GRID = 'rgba(31,42,69,0.6)';
+const FONT = { family: 'DM Mono, monospace', size: 11 };
+Chart.defaults.color = '#8899bb';
+Chart.defaults.font = FONT;
+
+// ── 1. PROVIDER CATEGORY PIE ──
+new Chart(document.getElementById('chartProviderPie'), {
+  type: 'doughnut',
+  data: {
+    labels: ['AI Neo-Cloud (14)', 'Marketplace/Federated (12)', 'API/Inference (18)', 'Hyperscaler (4)'],
+    datasets: [{
+      data: [14, 12, 18, 4],
+      backgroundColor: ['rgba(0,245,196,0.7)', 'rgba(249,115,22,0.7)', 'rgba(236,72,153,0.7)', 'rgba(99,102,241,0.7)'],
+      borderColor: ['#00f5c4','#f97316','#ec4899','#6366f1'],
+      borderWidth: 1.5
+    }]
+  },
+  options: {
+    responsive: true,
+    cutout: '62%',
+    plugins: {
+      legend: { position: 'right', labels: { font: FONT, padding: 14, boxWidth: 12 } }
+    }
+  }
+});
+
+// ── 2. GPU ECOSYSTEM SHARE ──
+new Chart(document.getElementById('chartGpuShare'), {
+  type: 'doughnut',
+  data: {
+    labels: ['NVIDIA (all)', 'Google TPU', 'AWS Trainium/Inf', 'AMD Instinct', 'Intel Gaudi', 'Groq LPU', 'Cerebras WSE', 'SambaNova', 'Other (<0.5%)'],
+    datasets: [{
+      data: [85.9, 4.2, 3.1, 2.15, 1.05, 0.54, 0.23, 0.15, 0.68],
+      backgroundColor: [
+        'rgba(118,185,0,0.75)', 'rgba(66,133,244,0.7)', 'rgba(255,153,0,0.7)',
+        'rgba(237,29,52,0.7)', 'rgba(0,113,197,0.7)', 'rgba(168,85,247,0.7)',
+        'rgba(6,182,212,0.7)', 'rgba(249,168,212,0.7)', 'rgba(100,116,139,0.7)'
+      ],
+      borderColor: ['#76b900','#4285f4','#ff9900','#ed1d34','#0071c5','#a855f7','#06b6d4','#f9a8d4','#475569'],
+      borderWidth: 1.5
+    }]
+  },
+  options: {
+    responsive: true,
+    cutout: '55%',
+    plugins: {
+      legend: { position: 'right', labels: { font: FONT, padding: 10, boxWidth: 10 } },
+      tooltip: {
+        callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed}%` }
+      }
+    }
+  }
+});
+
+// ── 3. PRICE TREND ──
+new Chart(document.getElementById('chartPriceTrend'), {
+  type: 'line',
+  data: {
+    labels: ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025', 'Q2 2025', 'Q3 2025', 'Q4 2025', 'Q1 2026'],
+    datasets: [
+      {
+        label: 'H100 SXM On-Demand (Neo-Cloud median)',
+        data: [5.20, 4.80, 4.20, 3.90, 3.50, 3.20, 3.10, 2.95, 2.85],
+        borderColor: '#00f5c4', backgroundColor: 'rgba(0,245,196,0.08)',
+        fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#00f5c4'
+      },
+      {
+        label: 'H100 PCIe On-Demand (marketplace floor)',
+        data: [3.20, 2.90, 2.50, 2.20, 2.00, 1.85, 1.70, 1.60, 1.53],
+        borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.06)',
+        fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#6366f1'
+      },
+      {
+        label: 'H100 SXM Google Cloud (hyperscaler)',
+        data: [14.00, 13.50, 13.20, 13.00, 12.80, 12.70, 12.65, 12.63, 12.63],
+        borderColor: '#f97316', backgroundColor: 'rgba(249,115,22,0.05)',
+        fill: false, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#f97316',
+        borderDash: [4,3]
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    scales: {
+      x: { grid: { color: GRID } },
+      y: { grid: { color: GRID }, title: { display: true, text: '$/GPU/hr' }, min: 0 }
+    },
+    plugins: { legend: { labels: { font: FONT } } }
+  }
+});
+
+// ── 4. H100 PRICE BAR ──
+new Chart(document.getElementById('chartH100Prices'), {
+  type: 'bar',
+  data: {
+    labels: ['Vast.ai\n(PCIe floor)', 'Hyperstack\n(PCIe)', 'RunPod\n(PCIe)', 'Hyperstack\n(SXM)', 'RunPod\n(SXM)', 'Nebius\n(SXM HGX)', 'Lambda\n(SXM)', 'Together AI\n(HGX)', 'GCP A3\n(SXM)'],
+    datasets: [{
+      label: '$/GPU/hr (on-demand)',
+      data: [0.90, 1.90, 1.99, 2.40, 2.69, 2.95, 3.56, 3.49, 12.63],
+      backgroundColor: [
+        'rgba(0,245,196,0.7)', 'rgba(0,245,196,0.65)', 'rgba(0,245,196,0.6)',
+        'rgba(0,245,196,0.55)', 'rgba(0,245,196,0.5)',
+        'rgba(250,204,21,0.65)', 'rgba(250,204,21,0.6)', 'rgba(250,204,21,0.55)',
+        'rgba(248,113,113,0.7)'
+      ],
+      borderColor: ['#00f5c4','#00f5c4','#00f5c4','#00f5c4','#00f5c4','#facc15','#facc15','#facc15','#f87171'],
+      borderWidth: 1.5
+    }]
+  },
+  options: {
+    responsive: true,
+    scales: {
+      x: { grid: { color: GRID } },
+      y: { grid: { color: GRID }, title: { display: true, text: '$/GPU/hr' }, min: 0 }
+    },
+    plugins: { legend: { display: false } }
+  }
+});
+
+// ── 5. GPU TIER RANGE ──
+new Chart(document.getElementById('chartGpuTierRange'), {
+  type: 'bar',
+  data: {
+    labels: ['B200 SXM', 'H200 SXM', 'H100 SXM', 'H100 PCIe', 'A100 SXM', 'A100 PCIe', 'L40S', 'RTX 4090', 'A40', 'V100'],
+    datasets: [
+      { label: 'Floor $/hr', data: [4.49, 2.30, 2.20, 0.90, 1.40, 0.85, 0.95, 0.40, 0.55, 0.35], backgroundColor: 'rgba(0,245,196,0.6)', borderColor: '#00f5c4', borderWidth: 1 },
+      { label: 'Ceiling $/hr', data: [7.49, 4.19, 3.67, 1.99, 2.06, 1.48, 1.40, 0.69, 0.79, 0.63], backgroundColor: 'rgba(99,102,241,0.5)', borderColor: '#6366f1', borderWidth: 1 }
+    ]
+  },
+  options: {
+    responsive: true,
+    scales: {
+      x: { grid: { color: GRID }, ticks: { font: { size: 10 } } },
+      y: { grid: { color: GRID }, title: { display: true, text: '$/GPU/hr' } }
+    },
+    plugins: { legend: { labels: { font: FONT } } }
+  }
+});
+
+// ── 6. COST PER TFLOP ──
+new Chart(document.getElementById('chartCostPerTflop'), {
+  type: 'bar',
+  data: {
+    labels: ['B200', 'H100 SXM', 'H200', 'A100 SXM', 'MI300X', 'Gaudi 3', 'H100 PCIe', 'L40S', 'RTX 4090'],
+    datasets: [{
+      label: '$/BF16 TFLOP/hr (est.)',
+      data: [0.00167, 0.00149, 0.00148, 0.00157, 0.00191, 0.00161, 0.00132, 0.00093, 0.00058],
+      backgroundColor: [
+        'rgba(0,245,196,0.7)','rgba(0,245,196,0.65)','rgba(0,245,196,0.6)',
+        'rgba(250,204,21,0.6)','rgba(252,165,165,0.65)','rgba(147,197,253,0.6)',
+        'rgba(0,245,196,0.5)','rgba(250,204,21,0.5)','rgba(74,222,128,0.65)'
+      ],
+      borderWidth: 1
+    }]
+  },
+  options: {
+    responsive: true,
+    scales: {
+      x: { grid: { color: GRID }, ticks: { font: { size: 10 } } },
+      y: { grid: { color: GRID }, title: { display: true, text: '$/BF16 TFLOP/hr' } }
+    },
+    plugins: { legend: { display: false } }
+  }
+});
+
+// ── 7. ASIC SHARE PIE ──
+new Chart(document.getElementById('chartAsicShare'), {
+  type: 'pie',
+  data: {
+    labels: [
+      'Google TPU (4.20%)', 'AWS Trainium/Inf (3.10%)', 'AMD MI300X+ (2.15%)',
+      'Intel Gaudi (1.05%)', 'Groq LPU (0.54%)', 'Cerebras WSE (0.23%)',
+      'SambaNova SN40L (0.15%)', 'Graphcore IPU (0.11%)', 'Tenstorrent (0.08%)',
+      'FuriosaAI RNGD (0.04%)', 'Moffett Antoum (0.02%)', 'Biren BR100 (0.01%)'
+    ],
+    datasets: [{
+      data: [4.20, 3.10, 2.15, 1.05, 0.54, 0.23, 0.15, 0.11, 0.08, 0.04, 0.02, 0.01],
+      backgroundColor: [
+        'rgba(66,133,244,0.8)', 'rgba(255,153,0,0.8)', 'rgba(237,29,52,0.75)',
+        'rgba(0,113,197,0.75)', 'rgba(168,85,247,0.75)', 'rgba(6,182,212,0.75)',
+        'rgba(249,168,212,0.75)', 'rgba(253,230,138,0.75)', 'rgba(167,243,208,0.75)',
+        'rgba(134,239,172,0.75)', 'rgba(244,114,182,0.75)', 'rgba(196,181,253,0.75)'
+      ],
+      borderWidth: 1
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position: 'right', labels: { font: { size: 9, family: 'DM Mono, monospace' }, padding: 8, boxWidth: 10 } },
+      tooltip: { callbacks: { label: ctx => ` ${ctx.label}` } }
+    }
+  }
+});
+
+// ── 8. ASIC PERF/PRICE SCATTER ──
+new Chart(document.getElementById('chartAsicPerfPrice'), {
+  type: 'scatter',
+  data: {
+    datasets: [
+      { label: 'B200', data: [{x: 5.50, y: 4500}], backgroundColor: '#00f5c4', pointRadius: 10, pointStyle: 'circle' },
+      { label: 'H100 SXM', data: [{x: 2.95, y: 1979}], backgroundColor: '#6366f1', pointRadius: 9 },
+      { label: 'H200 SXM', data: [{x: 3.50, y: 1979}], backgroundColor: '#38bdf8', pointRadius: 9 },
+      { label: 'A100 SXM', data: [{x: 2.00, y: 624}], backgroundColor: '#a5b4fc', pointRadius: 8 },
+      { label: 'MI300X (AMD)', data: [{x: 2.50, y: 1307}], backgroundColor: '#fca5a5', pointRadius: 9 },
+      { label: 'Gaudi 3 (Intel)', data: [{x: 2.95, y: 1835}], backgroundColor: '#93c5fd', pointRadius: 9 },
+      { label: 'TPU v5p (Google)', data: [{x: 4.20, y: 459}], backgroundColor: '#4285f4', pointRadius: 8 },
+      { label: 'RTX 4090', data: [{x: 0.69, y: 165}], backgroundColor: '#facc15', pointRadius: 7 },
+      { label: 'L40S', data: [{x: 1.35, y: 365}], backgroundColor: '#f97316', pointRadius: 7 },
+    ]
+  },
+  options: {
+    responsive: true,
+    scales: {
+      x: { grid: { color: GRID }, title: { display: true, text: '$/GPU/hr (on-demand)' } },
+      y: { grid: { color: GRID }, title: { display: true, text: 'BF16 TFLOPS' } }
+    },
+    plugins: {
+      legend: { position: 'right', labels: { font: { size: 9, family: 'DM Mono, monospace' }, boxWidth: 10, padding: 8 } },
+      tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: $${ctx.parsed.x}/hr | ${ctx.parsed.y} TFLOPS` } }
+    }
+  }
+});
+
+// ── 9. API PRICE BAR ──
+new Chart(document.getElementById('chartApiPrices'), {
+  type: 'bar',
+  data: {
+    labels: ['Groq Llama 8B', 'Fireworks 4B-', 'GPT-4o mini', 'Gemini 2.5 Flash', 'Groq Llama 70B', 'Fireworks 4-16B', 'Claude Haiku 4.5', 'Mistral Codestral', 'Fireworks >16B', 'Command R', 'GPT-4o', 'Claude Sonnet 4.6', 'Gemini 2.5 Pro', 'Claude Opus 4.6', 'o3 (OpenAI)'],
+    datasets: [{
+      label: 'Output $/1M tokens',
+      data: [0.08, 0.10, 0.60, 0.60, 0.79, 0.20, 5.00, 0.90, 0.90, 1.50, 10.00, 15.00, 15.00, 25.00, 40.00],
+      backgroundColor: [
+        'rgba(0,245,196,0.8)','rgba(0,245,196,0.75)','rgba(0,245,196,0.7)','rgba(0,245,196,0.65)',
+        'rgba(0,245,196,0.6)','rgba(0,245,196,0.55)','rgba(250,204,21,0.7)',
+        'rgba(250,204,21,0.65)','rgba(250,204,21,0.6)','rgba(250,204,21,0.55)',
+        'rgba(249,115,22,0.7)','rgba(249,115,22,0.65)','rgba(249,115,22,0.6)',
+        'rgba(248,113,113,0.75)','rgba(248,113,113,0.8)'
+      ],
+      borderWidth: 1
+    }]
+  },
+  options: {
+    responsive: true,
+    scales: {
+      x: { grid: { color: GRID }, ticks: { font: { size: 9 }, maxRotation: 45 } },
+      y: { grid: { color: GRID }, title: { display: true, text: 'Output $/1M tokens' }, type: 'logarithmic' }
+    },
+    plugins: { legend: { display: false } }
+  }
+});
+
+// ── 10. QUADRANT SCATTER ──
+new Chart(document.getElementById('chartQuadrant'), {
+  type: 'scatter',
+  data: {
+    datasets: [
+      {
+        label: 'Hyperscalers',
+        data: [
+          {x: 12.5, y: 9, label: 'AWS'},
+          {x: 12.6, y: 9.2, label: 'GCP'},
+          {x: 12.8, y: 9.0, label: 'Azure'},
+          {x: 3.5, y: 8.5, label: 'Oracle'}
+        ],
+        backgroundColor: 'rgba(99,102,241,0.7)', pointRadius: 11
+      },
+      {
+        label: 'Neo-Cloud Specialist',
+        data: [
+          {x: 2.95, y: 7.5, label: 'Nebius'},
+          {x: 3.5, y: 7.8, label: 'Lambda'},
+          {x: 3.0, y: 8.5, label: 'CoreWeave'},
+          {x: 3.5, y: 7.2, label: 'Together AI'},
+          {x: 3.0, y: 6.8, label: 'Crusoe'}
+        ],
+        backgroundColor: 'rgba(0,245,196,0.7)', pointRadius: 9
+      },
+      {
+        label: 'Marketplace',
+        data: [
+          {x: 1.5, y: 5, label: 'Vast.ai'},
+          {x: 2.0, y: 5.5, label: 'RunPod'},
+          {x: 1.8, y: 5.2, label: 'Hyperstack'},
+          {x: 0.7, y: 3.5, label: 'TensorDock'},
+          {x: 0.5, y: 3, label: 'Salad Cloud'}
+        ],
+        backgroundColor: 'rgba(249,115,22,0.7)', pointRadius: 8
+      },
+      {
+        label: 'API/Inference',
+        data: [
+          {x: 1.5, y: 9.5, label: 'Anthropic'},
+          {x: 1.5, y: 9.3, label: 'OpenAI'},
+          {x: 1.5, y: 8.8, label: 'Google AI'},
+          {x: 0.5, y: 7.5, label: 'Groq'},
+          {x: 0.8, y: 7.0, label: 'Fireworks'}
+        ],
+        backgroundColor: 'rgba(236,72,153,0.7)', pointRadius: 9
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    scales: {
+      x: {
+        grid: { color: GRID },
+        title: { display: true, text: '← Cheaper          $/GPU/hr          More Expensive →' },
+        min: 0, max: 15
+      },
+      y: {
+        grid: { color: GRID },
+        title: { display: true, text: '← Dev/Prototype     Capability/SLA     Enterprise →' },
+        min: 0, max: 11
+      }
+    },
+    plugins: {
+      legend: { labels: { font: FONT } },
+      tooltip: {
+        callbacks: {
+          label: ctx => {
+            const pt = ctx.dataset.data[ctx.dataIndex];
+            return `${pt.label || ctx.dataset.label}: $${ctx.parsed.x}/hr | SLA: ${ctx.parsed.y}/10`;
+          }
+        }
+      }
+    }
+  }
+});
+</script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <style>
+    .leaflet-container { background: #060d1a !important; font-family: 'DM Mono', monospace; }
+    .leaflet-tile { filter: brightness(0.88) saturate(0.9) contrast(1.05); }
+    .leaflet-control-zoom a { background:#0a0e1c !important; color:#00f5c4 !important; border-color:#1e3050 !important; font-weight:700; }
+    .leaflet-control-zoom a:hover { background:#162033 !important; }
+    .leaflet-control-attribution { background:rgba(4,6,13,0.7)!important; color:#3a4a6a!important; font-size:9px; }
+    .leaflet-control-attribution a { color:#3a4a6a!important; }
+    .map-tt {
+      background: rgba(4,6,13,0.95) !important;
+      border: 1px solid #1e3050 !important;
+      border-radius: 8px !important;
+      color: #e2e8f0 !important;
+      font-family: 'DM Mono', monospace !important;
+      font-size: 11px !important;
+      padding: 10px 14px !important;
+      box-shadow: 0 4px 32px rgba(0,0,0,0.7) !important;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+    .map-tt::before { display:none !important; }
+    .tt-name { font-size:13px; font-weight:700; margin-bottom:5px; }
+    .tt-sub  { color:#8899bb; font-size:10px; line-height:1.7; }
+    .tt-tag  { display:inline-block; padding:1px 7px; border-radius:4px; font-size:9px; margin-bottom:6px; }
+    @keyframes mapPulse { 0%,100%{opacity:0.22;transform:scale(1);} 50%{opacity:0.08;transform:scale(1.3);} }
+  </style>
+  <script>
+  (function() {
+    window.initLeafletMapGlobal = function initLeafletMap() {
+      var el = document.getElementById('worldMap');
+      if (!el || el._leafletMap) return;
+
+      var map = L.map('worldMap', {
+        center: [20, 18],
+        zoom: 2,
+        minZoom: 1,
+        maxZoom: 5,
+        zoomControl: true,
+        scrollWheelZoom: false,
+        worldCopyJump: true
+      });
+      el._leafletMap = map;
+
+      // Natural Earth / satellite base - clean blue oceans, natural land colors
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, USGS, NOAA',
+        maxZoom: 5
+      }).addTo(map);
+
+      // Subtle dark overlay only - NO color labels that distort hues
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
+        subdomains: 'abcd', opacity: 0.28, maxZoom: 5
+      }).addTo(map);
+
+      // Clean minimal labels on top
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png', {
+        subdomains: 'abcd', opacity: 0.65, maxZoom: 5
+      }).addTo(map);
+
+      // Equator line
+      L.polyline([[0,-180],[0,180]], {color:'rgba(0,245,196,0.15)',weight:1,dashArray:'6,4'}).addTo(map);
+      L.polyline([[23.5,-180],[23.5,180]], {color:'rgba(0,245,196,0.07)',weight:1,dashArray:'4,8'}).addTo(map);
+      L.polyline([[-23.5,-180],[-23.5,180]], {color:'rgba(0,245,196,0.07)',weight:1,dashArray:'4,8'}).addTo(map);
+
+      // ── Country label tracking — one label per country only ──
+      var drawnCountryLabels = {};
+
+      function makeMarker(lat, lng, color, size, name, country, tag, tagColor, sublabel) {
+        var outer = size * 2.4;
+
+        // Pulsing dot icon (no label embedded in icon)
+        var dotHtml = [
+          '<div style="position:relative;width:', outer, 'px;height:', outer, 'px;transform:translate(-50%,-50%);">',
+          '<div style="position:absolute;inset:0;border-radius:50%;background:', color,
+            ';opacity:0.14;box-shadow:0 0 ', size*4, 'px ', color, ';animation:mapPulse 2.8s infinite;"></div>',
+          '<div style="position:absolute;inset:', Math.round(outer*0.22), 'px;border-radius:50%;border:1.5px solid ', color,
+            ';background:rgba(4,6,13,0.30);"></div>',
+          '<div style="position:absolute;inset:', Math.round(outer*0.38), 'px;border-radius:50%;background:', color,
+            ';box-shadow:0 0 ', size*2, 'px ', color, ';"></div>',
+          '</div>'
+        ].join('');
+
+        var icon = L.divIcon({
+          html: dotHtml, className: '',
+          iconSize: [outer, outer], iconAnchor: [outer/2, outer/2],
+          tooltipAnchor: [outer/2 + 4, 0]
+        });
+
+        var tagStyle = 'background:' + tagColor + '22;color:' + tagColor + ';border:1px solid ' + tagColor + '55;';
+        var ttHtml = [
+          '<div class="tt-name" style="color:', color, ';">', name, '</div>',
+          '<div style="margin-bottom:5px;"><span class="tt-tag" style="', tagStyle, '">', tag, '</span></div>',
+          '<div class="tt-sub">', sublabel, '</div>'
+        ].join('');
+
+        L.marker([lat, lng], {icon: icon})
+          .addTo(map)
+          .bindTooltip(ttHtml, {
+            className: 'map-tt', sticky: false,
+            direction: 'auto', offset: [Math.round(outer/2)+4, 0]
+          });
+
+        // Draw country label ONCE per unique country, at this marker's position
+        if (country && !drawnCountryLabels[country]) {
+          drawnCountryLabels[country] = true;
+
+          var labelHtml = '<div style="' +
+            'font-family:\'DM Mono\',monospace;' +
+            'font-size:9.5px;font-weight:700;' +
+            'letter-spacing:0.1em;text-transform:uppercase;' +
+            'color:#e2e8f0;' +
+            'text-shadow:0 0 6px rgba(0,0,0,1),0 1px 2px rgba(0,0,0,1),0 0 12px rgba(0,0,0,0.9);' +
+            'white-space:nowrap;pointer-events:none;' +
+            'background:rgba(4,6,13,0.62);' +
+            'padding:2px 6px;border-radius:3px;' +
+            'border-left:2px solid ' + color + ';' +
+            'margin-top:4px;margin-left:' + (-Math.round(outer/2)) + 'px;' +
+          '">' + country + '</div>';
+
+          var labelIcon = L.divIcon({
+            html: labelHtml,
+            className: '',
+            iconSize:   [0, 0],
+            iconAnchor: [0, -(Math.round(outer/2) + 2)]
+          });
+
+          L.marker([lat, lng], {
+            icon: labelIcon,
+            interactive: false,
+            zIndexOffset: 500
+          }).addTo(map);
+        }
+      }
+
+      function makeSmallDot(lat, lng, color, tooltip) {
+        var html = '<div style="width:7px;height:7px;border-radius:50%;background:' + color + ';opacity:0.6;box-shadow:0 0 5px ' + color + ';"></div>';
+        L.marker([lat, lng], {
+          icon: L.divIcon({ html:html, className:'', iconSize:[7,7], iconAnchor:[3.5,3.5] })
+        }).addTo(map).bindTooltip(tooltip, {className:'map-tt', direction:'top'});
+      }
+
+      // ════════════════════════════════════════════════════════════════
+      // ALL CSP PRESENCE MARKERS
+      // makeMarker(lat, lng, color, size, hoverName, countryLabel, tag, tagColor, hoverDetail)
+      // Country label is drawn ONCE per unique country automatically
+      // ════════════════════════════════════════════════════════════════
+
+      // ── UNITED STATES ──
+      makeMarker(38.9, -77.0, '#6366f1', 19, 'USA — Virginia / DC', 'United States',
+        'Hyperscaler', '#6366f1',
+        'AWS us-east-1 (N. Virginia) · us-east-2 (Ohio)<br>GCP us-east4 · Azure East US<br>Oracle US East · CoreWeave VA/NJ');
+
+      makeMarker(37.4, -122.1, '#6366f1', 16, 'USA — California', 'United States',
+        'Hyperscaler', '#6366f1',
+        'AWS us-west-1 (N. California) · us-west-2 (Oregon)<br>GCP us-west1 · Azure West US<br>Lambda Labs CA');
+
+      makeMarker(47.6, -122.3, '#6366f1', 10, 'USA — Pacific Northwest', 'United States',
+        'Hyperscaler', '#6366f1',
+        'AWS us-west-2 (Oregon) · Azure West US 2<br>GCP us-west1 (Oregon)');
+
+      makeMarker(41.8, -87.6, '#6366f1', 9, 'USA — Midwest / Ohio', 'United States',
+        'Hyperscaler', '#6366f1',
+        'AWS us-east-2 (Ohio) · Azure North Central US<br>GCP us-central1 (Iowa)');
+
+      makeMarker(29.7, -95.4, '#6366f1', 9, 'USA — Texas', 'United States',
+        'Hyperscaler', '#6366f1',
+        'Oracle US South · Together AI TX<br>AWS us-east-2 routing · Crusoe Energy');
+
+      makeMarker(40.7, -74.1, '#00f5c4', 13, 'CoreWeave — New Jersey', 'United States',
+        'Neo-Cloud', '#00f5c4',
+        'H100/H200/B200 clusters · NJ · VA · TX · EU<br>Largest pure-play GPU cloud<br>Reserved infra · frontier clusters');
+
+      makeMarker(37.8, -120.8, '#00f5c4', 11, 'Lambda Labs — California', 'United States',
+        'Neo-Cloud', '#00f5c4',
+        'H100 SXM $3.44–$3.67/GPU/hr<br>A100 from $2.06/hr · US + EU DCs');
+
+      makeMarker(39.8, -104.9, '#00f5c4', 9, 'Crusoe Energy — Colorado', 'United States',
+        'Neo-Cloud', '#00f5c4',
+        'Carbon-neutral AI cloud · Colorado<br>H100/B200 reserved clusters');
+
+      makeMarker(39.0, -94.5, '#f97316', 12, 'RunPod · Vast.ai · TensorDock', 'United States',
+        'Marketplace', '#f97316',
+        'H100 SXM from $2.20/hr (Vast.ai)<br>H100 PCIe from $1.53/hr<br>RTX 4090 from $0.40/hr (Salad Cloud)');
+
+      // ── CANADA ──
+      makeMarker(45.5, -73.6, '#6366f1', 12, 'Canada — Montréal', 'Canada',
+        'Hyperscaler', '#6366f1',
+        'AWS ca-central-1 · GCP northamerica-northeast1<br>Azure Canada East · Hyperstack CA');
+
+      makeMarker(49.2, -123.1, '#6366f1', 9, 'Canada — Vancouver', 'Canada',
+        'Hyperscaler', '#6366f1',
+        'AWS ca-west-1 · Azure Canada West<br>GCP northamerica-northeast2');
+
+      makeMarker(43.7, -79.4, '#f97316', 8, 'DigitalOcean / Paperspace — Toronto', 'Canada',
+        'Marketplace', '#f97316',
+        'H100 · A100 · L40S · SMB-friendly<br>AWS ca-central-1 · Azure Canada Central');
+
+      // ── BRAZIL ──
+      makeMarker(-23.5, -46.6, '#f97316', 13, 'Brazil — São Paulo', 'Brazil',
+        'Hyperscaler + Marketplace', '#f97316',
+        'AWS sa-east-1 · GCP southamerica-east1<br>Azure Brazil South · Oracle Brazil<br>Latitude.sh LatAm specialist');
+
+      makeMarker(-15.8, -47.9, '#f97316', 7, 'Brazil — Brasília', 'Brazil',
+        'Marketplace', '#f97316',
+        'GCP southamerica-west1 (Santiago) routing<br>Latitude.sh emerging DC');
+
+      // ── CHILE ──
+      makeMarker(-33.4, -70.6, '#f97316', 8, 'Chile — Santiago', 'Chile',
+        'Marketplace', '#f97316',
+        'GCP southamerica-west1 · Latitude.sh<br>AWS expanding LatAm presence');
+
+      // ── ARGENTINA ──
+      makeMarker(-34.6, -58.4, '#f97316', 8, 'Argentina — Buenos Aires', 'Argentina',
+        'Marketplace', '#f97316',
+        'io.net decentralized nodes<br>Emerging LatAm cloud presence');
+
+      // ── COLOMBIA ──
+      makeMarker(4.7, -74.1, '#f97316', 7, 'Colombia — Bogotá', 'Colombia',
+        'Marketplace', '#f97316',
+        'AWS edge · io.net DePIN nodes<br>GCP LatAm expansion planned');
+
+      // ── MEXICO ──
+      makeMarker(19.4, -99.1, '#f97316', 9, 'Mexico — Mexico City', 'Mexico',
+        'Marketplace', '#f97316',
+        'AWS edge locations · GCP expansion<br>io.net decentralized nodes');
+
+      // ── UNITED KINGDOM ──
+      makeMarker(51.5, -0.1, '#6366f1', 15, 'UK — London', 'United Kingdom',
+        'Hyperscaler', '#6366f1',
+        'AWS eu-west-2 (London) · GCP europe-west2<br>Azure UK South / UK West<br>Hyperstack UK · Fluidstack EU');
+
+      // ── IRELAND ──
+      makeMarker(53.3, -6.2, '#6366f1', 13, 'Ireland — Dublin', 'Ireland',
+        'Hyperscaler', '#6366f1',
+        'AWS eu-west-1 (Dublin) · GCP europe-west1<br>Azure West Europe routing · CoreWeave EU');
+
+      // ── FRANCE ──
+      makeMarker(48.8, 2.35, '#00f5c4', 12, 'France — Paris', 'France',
+        'Neo-Cloud + Marketplace', '#00f5c4',
+        'Scaleway FR (sovereign GDPR cloud) · Nebius Paris<br>GCP europe-west9 · Azure France Central<br>OVHcloud HQ · AWS eu-west-3');
+
+      // ── GERMANY ──
+      makeMarker(50.1, 8.7, '#6366f1', 14, 'Germany — Frankfurt', 'Germany',
+        'Hyperscaler', '#6366f1',
+        'AWS eu-central-1 (Frankfurt) · GCP europe-west3<br>Azure Germany North / West Central<br>Oracle EU · Nebius DE');
+
+      // ── NETHERLANDS ──
+      makeMarker(52.4, 4.9, '#f97316', 10, 'Netherlands — Amsterdam', 'Netherlands',
+        'Marketplace', '#f97316',
+        'GCP europe-west4 · Azure Netherlands<br>Hyperstack NL · Oracle Netherlands<br>AWS eu-central-1 routing');
+
+      // ── FINLAND ──
+      makeMarker(60.2, 24.9, '#00f5c4', 14, 'Nebius — Helsinki', 'Finland',
+        'Neo-Cloud', '#00f5c4',
+        'H100 SXM $2.95/hr · Reserved $2.00/hr<br>H200 from $3.50/hr · EU data residency<br>Yandex spin-off · GDPR-native');
+
+      // ── SWEDEN ──
+      makeMarker(59.3, 18.1, '#6366f1', 9, 'Sweden — Stockholm', 'Sweden',
+        'Hyperscaler', '#6366f1',
+        'AWS eu-north-1 (Stockholm) · Azure Sweden Central<br>GCP europe-north1');
+
+      // ── NORWAY ──
+      makeMarker(59.9, 10.7, '#f97316', 7, 'Norway — Oslo', 'Norway',
+        'Marketplace', '#f97316',
+        'UpCloud EU nodes · Azure Norway East<br>Renewable energy GPU cloud');
+
+      // ── POLAND ──
+      makeMarker(52.2, 21.0, '#f97316', 8, 'Poland — Warsaw', 'Poland',
+        'Marketplace', '#f97316',
+        'Scaleway Warsaw DC · Azure Poland Central<br>GCP europe-central2');
+
+      // ── ICELAND ──
+      makeMarker(64.1, -21.9, '#00f5c4', 11, 'Genesis Cloud — Reykjavik', 'Iceland',
+        'Neo-Cloud', '#00f5c4',
+        '100% renewable geothermal energy<br>H100/A100 on-demand · Nebius IS<br>EU GDPR compliant');
+
+      // ── SPAIN ──
+      makeMarker(40.4, -3.7, '#6366f1', 8, 'Spain — Madrid', 'Spain',
+        'Hyperscaler', '#6366f1',
+        'Azure Spain Central · GCP europe-southwest1<br>AWS eu-south-2');
+
+      // ── ITALY ──
+      makeMarker(45.5, 9.2, '#f97316', 8, 'Italy — Milan', 'Italy',
+        'Marketplace', '#f97316',
+        'AWS eu-south-1 (Milan) · Azure Italy North<br>Seeweb (Italian sovereign GPU cloud)');
+
+      // ── SWITZERLAND ──
+      makeMarker(47.4, 8.5, '#6366f1', 8, 'Switzerland — Zürich', 'Switzerland',
+        'Hyperscaler', '#6366f1',
+        'GCP europe-west6 · Azure Switzerland North<br>AWS region expansion planned');
+
+      // ── TURKEY ──
+      makeMarker(41.0, 28.9, '#6366f1', 8, 'Turkey — Istanbul', 'Turkey',
+        'Hyperscaler', '#6366f1',
+        'Azure Turkey North · GCP expansion<br>AWS edge · Turkcell Cloud');
+
+      // ── RUSSIA ──
+      makeMarker(55.8, 37.6, '#f97316', 8, 'Russia — Moscow', 'Russia',
+        'Marketplace (Restricted)', '#f97316',
+        'Yandex Cloud (Nebius parent, now separate)<br>Sbercloud · Rostelecom CDN<br>Western CSPs restricted post-2022');
+
+      // ── KAZAKHSTAN ──
+      makeMarker(51.2, 71.4, '#f97316', 6, 'Kazakhstan — Astana', 'Kazakhstan',
+        'Marketplace', '#f97316',
+        'io.net decentralized nodes<br>Emerging Central Asia cloud hub');
+
+      // ── UAE ──
+      makeMarker(25.2, 55.3, '#facc15', 20, 'UAE — Dubai', 'UAE',
+        'UAE Sovereign', '#facc15',
+        'Oracle Cloud UAE (me-dubai-1)<br>AWS me-central-1 · Azure UAE North<br>G42 Cloud · Cerebras WSE-3 (Abu Dhabi)<br>Best hyperscaler MEA presence');
+
+      makeMarker(24.4, 54.4, '#facc15', 9, 'UAE — Abu Dhabi', 'UAE',
+        'UAE Sovereign', '#facc15',
+        'G42 Cloud · Cerebras WSE-3 deployment<br>AI sovereign computing hub · TII<br>NVIDIA DGX SuperPOD installations');
+
+      // ── SAUDI ARABIA ──
+      makeMarker(24.7, 46.7, '#f97316', 11, 'Saudi Arabia — Riyadh', 'Saudi Arabia',
+        'Hyperscaler', '#f97316',
+        'AWS me-central-1 (Bahrain) routing<br>Azure UAE North serves KSA<br>Oracle expanding · LEAP cloud initiative<br>STC Cloud · stc GPU fleet');
+
+      // ── BAHRAIN ──
+      makeMarker(26.2, 50.6, '#6366f1', 9, 'Bahrain', 'Bahrain',
+        'Hyperscaler', '#6366f1',
+        'AWS me-south-1 (Bahrain) — primary ME region<br>GCP Middle East expansion staging');
+
+      // ── ISRAEL ──
+      makeMarker(32.1, 34.8, '#6366f1', 8, 'Israel — Tel Aviv', 'Israel',
+        'Hyperscaler', '#6366f1',
+        'AWS il-central-1 (Israel) · Azure Israel Central<br>GCP Israel expansion');
+
+      // ── EGYPT ──
+      makeMarker(30.0, 31.2, '#f97316', 8, 'Egypt — Cairo', 'Egypt',
+        'Marketplace', '#f97316',
+        'AWS me-south-1 routing · Oracle MEA<br>Microsoft Azure expansion MEA<br>Emerging North Africa cloud hub');
+
+      // ── INDIA ──
+      makeMarker(19.1, 72.9, '#f97316', 15, 'India — Mumbai', 'India',
+        'Hyperscaler + Marketplace', '#f97316',
+        'AWS ap-south-1 (Mumbai) · GCP asia-south1<br>Azure India West · Oracle Mumbai<br>Jarvis Labs (A100/H100)');
+
+      makeMarker(12.9, 77.6, '#f97316', 10, 'India — Bengaluru', 'India',
+        'Hyperscaler', '#f97316',
+        'AWS ap-south-2 (Hyderabad) · Azure India Central<br>GCP asia-south2 · Oracle Hyderabad');
+
+      makeMarker(13.1, 80.3, '#f97316', 7, 'India — Chennai', 'India',
+        'Marketplace', '#f97316',
+        'io.net DePIN nodes · Jarvis Labs IN<br>Azure India South · Tata edge cloud');
+
+      // ── SINGAPORE ──
+      makeMarker(1.35, 103.8, '#6366f1', 17, 'Singapore', 'Singapore',
+        'Hyperscaler', '#6366f1',
+        'AWS ap-southeast-1 · GCP asia-southeast1<br>Azure Southeast Asia · Oracle Singapore<br>io.net APAC hub · Vast.ai nodes');
+
+      // ── MALAYSIA ──
+      makeMarker(3.1, 101.7, '#6366f1', 8, 'Malaysia — Kuala Lumpur', 'Malaysia',
+        'Hyperscaler', '#6366f1',
+        'AWS ap-southeast-5 · GCP expansion<br>Azure Malaysia West (2025)');
+
+      // ── INDONESIA ──
+      makeMarker(-6.2, 106.8, '#f97316', 8, 'Indonesia — Jakarta', 'Indonesia',
+        'Hyperscaler', '#f97316',
+        'AWS ap-southeast-3 (Jakarta) · GCP asia-southeast2<br>Azure Indonesia Central (2025)');
+
+      // ── THAILAND ──
+      makeMarker(13.7, 100.5, '#f97316', 7, 'Thailand — Bangkok', 'Thailand',
+        'Marketplace', '#f97316',
+        'AWS edge locations · GCP asia-southeast1 routing<br>io.net decentralized nodes');
+
+      // ── PHILIPPINES ──
+      makeMarker(14.6, 121.0, '#f97316', 7, 'Philippines — Manila', 'Philippines',
+        'Marketplace', '#f97316',
+        'AWS edge · Azure Philippines (2024)<br>io.net DePIN nodes · emerging market');
+
+      // ── VIETNAM ──
+      makeMarker(10.8, 106.7, '#f97316', 6, 'Vietnam — Ho Chi Minh City', 'Vietnam',
+        'Marketplace', '#f97316',
+        'AWS edge location · GCP expansion<br>Emerging SEA cloud hub');
+
+      // ── JAPAN ──
+      makeMarker(35.7, 139.7, '#6366f1', 16, 'Japan — Tokyo', 'Japan',
+        'Hyperscaler', '#6366f1',
+        'AWS ap-northeast-1 (Tokyo) · GCP asia-northeast1<br>Azure Japan East/West · Oracle Tokyo<br>SoftBank Cloud');
+
+      makeMarker(34.7, 135.5, '#6366f1', 9, 'Japan — Osaka', 'Japan',
+        'Hyperscaler', '#6366f1',
+        'AWS ap-northeast-3 (Osaka) · GCP asia-northeast2<br>Azure Japan West · Oracle Osaka');
+
+      // ── SOUTH KOREA ──
+      makeMarker(37.6, 127.0, '#6366f1', 12, 'South Korea — Seoul', 'South Korea',
+        'Hyperscaler', '#6366f1',
+        'AWS ap-northeast-2 (Seoul) · GCP asia-northeast3<br>Azure Korea Central/South<br>FuriosaAI RNGD (domestic chip)');
+
+      // ── TAIWAN ──
+      makeMarker(25.0, 121.5, '#f97316', 7, 'Taiwan — Taipei', 'Taiwan',
+        'Marketplace', '#f97316',
+        'GCP asia-east1 (Taiwan) · Azure East Asia<br>TSMC AI compute integration');
+
+      // ── HONG KONG ──
+      makeMarker(22.3, 114.2, '#6366f1', 8, 'Hong Kong', 'Hong Kong',
+        'Hyperscaler', '#6366f1',
+        'AWS ap-east-1 · GCP asia-east2<br>Azure East Asia routing · Oracle HK');
+
+      // ── CHINA ──
+      makeMarker(31.2, 121.5, '#f97316', 10, 'China — Shanghai', 'China',
+        'Domestic Cloud', '#f97316',
+        'Alibaba Cloud · Tencent Cloud HQ<br>Biren BR100 domestic GPU<br>US export controls apply to NVIDIA H100+');
+
+      makeMarker(39.9, 116.4, '#f97316', 9, 'China — Beijing', 'China',
+        'Domestic Cloud', '#f97316',
+        'AWS cn-north-1 · Azure China North<br>Baidu Cloud · Cambricon · Huawei Ascend');
+
+      // ── AUSTRALIA ──
+      makeMarker(-33.9, 151.2, '#6366f1', 15, 'Australia — Sydney', 'Australia',
+        'Hyperscaler', '#6366f1',
+        'AWS ap-southeast-2 (Sydney) · GCP australia-southeast1<br>Azure Australia East · Oracle Sydney');
+
+      makeMarker(-37.8, 144.9, '#6366f1', 9, 'Australia — Melbourne', 'Australia',
+        'Hyperscaler', '#6366f1',
+        'AWS ap-southeast-4 (Melbourne) · GCP australia-southeast2<br>Azure Australia Southeast');
+
+      // ── NEW ZEALAND ──
+      makeMarker(-36.9, 174.8, '#f97316', 7, 'New Zealand — Auckland', 'New Zealand',
+        'Marketplace', '#f97316',
+        'AWS edge location · Azure NZ planned<br>io.net Oceania nodes');
+
+      // ── SOUTH AFRICA ──
+      makeMarker(-26.2, 28.0, '#f97316', 11, 'South Africa — Johannesburg', 'South Africa',
+        'Hyperscaler', '#f97316',
+        'AWS af-south-1 (Cape Town) · GCP africa-south1<br>Azure South Africa North<br>Oracle South Africa');
+
+      makeMarker(-33.9, 18.4, '#f97316', 8, 'South Africa — Cape Town', 'South Africa',
+        'Hyperscaler', '#f97316',
+        'AWS af-south-1 primary DC<br>GCP africa-south1 · io.net AF nodes');
+
+      // ── KENYA ──
+      makeMarker(-1.3, 36.8, '#f97316', 7, 'Kenya — Nairobi', 'Kenya',
+        'Marketplace', '#f97316',
+        'Google Cloud Africa region (planned)<br>Azure Africa expansion · io.net DePIN');
+
+      // ── NIGERIA ──
+      makeMarker(6.5, 3.4, '#f97316', 7, 'Nigeria — Lagos', 'Nigeria',
+        'Marketplace', '#f97316',
+        'AWS edge location · Azure Africa expansion<br>Emerging AI hub for West Africa');
+
+      // ── ETHIOPIA ──
+      makeMarker(8.9, 38.7, '#f97316', 6, 'Ethiopia — Addis Ababa', 'Ethiopia',
+        'Marketplace', '#f97316',
+        'Microsoft Africa subsea cable hub<br>io.net edge node presence');
+
+      // ── io.net / DePIN scattered background dots (no country label) ──
+      var ioNetDots = [
+        [36.8,10.2,'Tunis, Tunisia'],[33.5,-7.6,'Casablanca, Morocco'],
+        [23.7,90.4,'Dhaka, Bangladesh'],[27.7,85.3,'Kathmandu, Nepal'],
+        [33.7,73.1,'Islamabad, Pakistan'],[41.3,69.2,'Tashkent, Uzbekistan'],
+        [43.2,76.9,'Almaty, Kazakhstan'],[47.9,106.9,'Ulaanbaatar, Mongolia'],
+        [60.0,30.3,'St. Petersburg, Russia'],[56.8,60.6,'Yekaterinburg, Russia'],
+        [15.6,32.5,'Khartoum, Sudan'],[3.9,11.5,'Yaoundé, Cameroon'],
+        [-4.3,15.3,'Kinshasa, DRC'],[-17.8,31.0,'Harare, Zimbabwe'],
+        [-25.9,32.6,'Maputo, Mozambique'],[9.0,38.7,'Addis Ababa node 2'],
+        [18.1,-15.9,'Nouakchott, Mauritania'],[5.8,-0.2,'Accra, Ghana'],
+        [17.4,78.5,'Hyderabad, India'],[26.9,75.8,'Jaipur, India'],
+        [22.6,88.4,'Kolkata, India'],[7.9,98.4,'Phuket, Thailand'],
+        [3.1,101.7,'Kuala Lumpur node 2'],[1.5,110.3,'Kuching, Malaysia'],
+        [-8.6,115.2,'Bali, Indonesia'],[-7.3,112.7,'Surabaya, Indonesia'],
+        [10.8,106.7,'HCMC node 2'],[16.1,108.2,'Da Nang, Vietnam'],
+        [21.0,105.8,'Hanoi, Vietnam'],[13.8,100.5,'Bangkok node 2'],
+        [-27.5,153.0,'Brisbane, Australia'],[-31.9,115.9,'Perth, Australia'],
+        [-12.5,130.8,'Darwin, Australia'],[-43.5,172.6,'Christchurch, NZ'],
+        [45.4,-75.7,'Ottawa, Canada'],[51.0,-114.1,'Calgary, Canada'],
+        [53.5,-113.5,'Edmonton, Canada'],[32.7,-117.2,'San Diego, USA'],
+        [33.4,-112.1,'Phoenix, USA'],[39.9,-105.1,'Denver, USA'],
+        [36.2,-115.1,'Las Vegas, USA'],[30.3,-97.7,'Austin, USA'],
+        [32.8,-96.8,'Dallas, USA'],[25.8,-80.2,'Miami, USA'],
+        [33.7,-84.4,'Atlanta, USA'],[42.4,-83.1,'Detroit, USA'],
+        [44.9,-93.2,'Minneapolis, USA'],[39.1,-84.5,'Cincinnati, USA'],
+        [36.2,-86.8,'Nashville, USA'],[35.2,-80.8,'Charlotte, USA']
+      ];
+
+      ioNetDots.forEach(function(d) {
+        makeSmallDot(d[0], d[1], '#f97316',
+          '<div class="tt-sub"><b style="color:#f97316;">io.net DePIN</b> · ' + d[2] + '<br>Decentralized GPU node · 138 countries</div>');
+      });
+
+
+    }
+
+    // Init when section becomes active
+    var geo = document.getElementById('geo');
+    var observer = new MutationObserver(function(muts) {
+      muts.forEach(function(m) {
+        if (m.target.classList.contains('active')) {
+          setTimeout(initLeafletMapGlobal, 80);
+        }
+      });
+    });
+    if (geo) observer.observe(geo, { attributes: true, attributeFilter: ['class'] });
+
+    // Also init on nav click
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('.ntab').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          if (this.textContent.includes('Geographic')) {
+            setTimeout(initLeafletMapGlobal, 120);
+          }
+        });
+      });
+      // If already active on load
+      if (geo && geo.classList.contains('active')) {
+        setTimeout(initLeafletMapGlobal, 200);
+      }
+    });
+  })();
+  </script>
+
+</body>
+</html>
